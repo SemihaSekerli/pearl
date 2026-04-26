@@ -586,6 +586,101 @@ table.preview tr:hover td { background: #1c2333; }
     #chatToggle { width: 100px; height: 100px; }
 }
 
+/* Knock-knock attention bubble (mirrors Chico's pattern) */
+@keyframes pearlKnock {
+    0%, 100% { transform: scale(1); }
+    10% { transform: scale(1.15) rotate(-7deg); }
+    20% { transform: scale(1) rotate(7deg); }
+    30% { transform: scale(1.15) rotate(-7deg); }
+    40% { transform: scale(1) rotate(0); }
+    50%, 100% { transform: scale(1); }
+}
+#pearlBubble {
+    display: none;
+    position: fixed;
+    bottom: 170px;
+    right: 24px;
+    background: #161b22;
+    border: 2px solid #c0392b;
+    border-radius: 16px 16px 4px 16px;
+    padding: 14px 18px;
+    max-width: 280px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #e0e0e0;
+    line-height: 1.6;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    z-index: 9998;
+    animation: pearlBubbleFade 0.4s ease;
+}
+#pearlBubble.show { display: block; }
+#pearlBubble b { color: #ffffff; }
+#pearlBubble .close-bubble {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #7f8c8d;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+#pearlBubble .close-bubble:hover { color: #ffffff; }
+@keyframes pearlBubbleFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* In-context speech bubble (wander, nap, peek, section tips) */
+#pearlSpeech {
+    position: fixed;
+    display: none;
+    background: #161b22;
+    border: 2px solid #c0392b;
+    color: #e0e0e0;
+    padding: 9px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    max-width: 260px;
+    line-height: 1.5;
+    z-index: 10001;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#pearlSpeech.show { display: block; opacity: 1; }
+#pearlSpeech.above { transform: translate(-50%, -100%) translateY(-12px); border-radius: 14px 14px 14px 4px; }
+#pearlSpeech.below { transform: translate(-50%, 0) translateY(12px); border-radius: 4px 14px 14px 14px; }
+#pearlSpeech.right { transform: translate(12px, -50%); border-radius: 4px 14px 14px 14px; }
+#pearlSpeech.left { transform: translate(calc(-100% - 12px), -50%); border-radius: 14px 4px 14px 14px; }
+
+/* Idle behavior states for the chat toggle */
+#chatToggle.roaming { animation: none !important; transition: transform 2.5s linear; }
+#chatToggle.roaming-fast { transition: transform 0.8s ease-in-out; }
+#chatToggle.napping { animation: none !important; transform: rotate(14deg) scale(0.95) !important; transition: transform 0.4s; }
+#chatToggle.peeking { animation: none !important; transition: transform 0.5s ease-in-out; }
+#chatToggle.section-wiggle { animation: pearlKnock 0.8s ease-in-out !important; }
+
+/* Sleep Z's */
+#pearlZzz {
+    position: fixed;
+    bottom: 130px;
+    right: 24px;
+    font-size: 22px;
+    z-index: 10000;
+    animation: pearlZzz 2.6s ease-in-out infinite;
+    pointer-events: none;
+    display: none;
+}
+#pearlZzz.show { display: block; }
+@keyframes pearlZzz {
+    0%, 100% { opacity: 0; transform: translate(0, 0) scale(0.7); }
+    45%, 55% { opacity: 1; transform: translate(8px, -12px) scale(1); }
+}
+
 footer {
     text-align: center;
     padding: 32px 24px;
@@ -634,7 +729,7 @@ footer {
 
 <header>
     <div class="author">Dr. Semiha B. Sekerli, Ph.D.<span>QUANTITATIVE METHODOLOGIST</span></div>
-    <h1><span class="pearl-emoji">&#128008;</span> Pearl</h1>
+    <h1><span style="display:block;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#7f8c8d;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">Welcome to</span>&#128008;&#8205;&#11035; Pearl</h1>
     <p class="subtitle">A Web-Based Statistics Tool for Doctoral Researchers</p>
     <p class="hero-description">Pearl is Chico's little brother &mdash; Dr. Semiha B. Sekerli's open-access quantitative methodology tool. Upload your data, pick a test, and Pearl will run the analysis and interpret the results in plain language. Built for doctoral students and researchers who want SPSS-level analysis without the price tag &mdash; and your data never leaves your browser.</p>
     <div class="hero-cta">
@@ -833,7 +928,13 @@ footer {
     </div>
 </main>
 
+<div id="pearlSpeech"></div>
+<div id="pearlZzz">&#128164;</div>
 <div id="chatWidget">
+    <div id="pearlBubble">
+        <button class="close-bubble" onclick="document.getElementById('pearlBubble').classList.remove('show');" aria-label="Dismiss">&times;</button>
+        &#129302; <b>Knock knock!</b><br>Hi! I'm Pearl &mdash; Dr. Sekerli's stats tutor. Need help picking a test or interpreting results? Click me!
+    </div>
     <div id="chatWindow">
         <div id="chatHeader">
             <div>
@@ -2265,12 +2366,53 @@ footer {
         chatToggle.classList.remove('open');
     }
 
+    function playKnock() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            function knock(time) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 140;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.25, ctx.currentTime + time);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.15);
+                osc.start(ctx.currentTime + time);
+                osc.stop(ctx.currentTime + time + 0.15);
+            }
+            knock(0); knock(0.25);
+        } catch (e) {}
+    }
+
+    const pearlBubble = document.getElementById('pearlBubble');
+    const pearlKnockTimer = setTimeout(function() {
+        if (!chatWin.classList.contains('open')) {
+            chatToggle.style.animation = 'pearlKnock 1s ease-in-out';
+            if (pearlBubble) pearlBubble.classList.add('show');
+            playKnock();
+            setTimeout(function() {
+                chatToggle.style.animation = 'chatBounce 2s ease-in-out infinite';
+            }, 1000);
+            setTimeout(function() {
+                if (pearlBubble) pearlBubble.classList.remove('show');
+            }, 8000);
+        }
+    }, 7000);
+
     chatToggle.addEventListener('click', function() {
+        clearTimeout(pearlKnockTimer);
+        if (pearlBubble) pearlBubble.classList.remove('show');
         if (chatWin.classList.contains('open')) closeChat();
         else openChat();
     });
     const askPearlLink = document.getElementById('askPearlLink');
-    if (askPearlLink) askPearlLink.addEventListener('click', function(e) { e.preventDefault(); openChat(); });
+    if (askPearlLink) askPearlLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        clearTimeout(pearlKnockTimer);
+        if (pearlBubble) pearlBubble.classList.remove('show');
+        openChat();
+    });
     chatClose.addEventListener('click', closeChat);
     chatSend.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', function(e) {
@@ -2364,6 +2506,163 @@ footer {
     function escapeHtml(s) {
         return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
+})();
+</script>
+
+<script>
+// Pearl personality: wander, nap, peek, section-aware tips. Mirrors Chico's pattern.
+(function(){
+    const toggle = document.getElementById('chatToggle');
+    if (!toggle) return;
+    const speech = document.getElementById('pearlSpeech');
+    const zzz = document.getElementById('pearlZzz');
+    const chatWin = document.getElementById('chatWindow');
+    let busy = false;
+    let lastActivity = Date.now();
+    const pageLoadTime = Date.now();
+    let lastWander = Date.now();
+    let lastPeek = Date.now() - 15000;
+    let lastNap = 0;
+    const sectionLastShown = {};
+
+    function chatIsOpen() { return chatWin && chatWin.classList.contains('open'); }
+    function knockKnockShowing() {
+        const k = document.getElementById('pearlBubble');
+        return k && k.classList.contains('show');
+    }
+    function inInitialPeriod() { return Date.now() - pageLoadTime < 17000; }
+    function blocked() { return chatIsOpen() || knockKnockShowing() || inInitialPeriod(); }
+
+    const WANDER_MSGS = ['\u{1F916} Need help?', 'Got a research question?', "I'm here when you need me!", 'Curious about a test?', 'Want to chat about your data?'];
+    const PEEK_MSGS = ['\u{1F440}', 'Boop!', 'Hey', 'Hi there'];
+    const NAP_MSGS = ['\u{1F4A4} Standby mode...', 'Zzz... wake me when you need stats', 'On standby \u{1F916}'];
+
+    const SECTIONS = [
+        { id: 'uploadZone', msg: 'Drop your CSV right here to get started!' },
+        { id: 'dataSection', msg: 'Data loaded! Click any test card — or ask me which one fits.' },
+        { id: 'results', msg: 'Want me to interpret this in plain English? Click me!' }
+    ];
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function showSpeech(x, y, text, position) {
+        speech.textContent = text;
+        speech.style.left = x + 'px';
+        speech.style.top = y + 'px';
+        speech.classList.remove('above', 'below', 'left', 'right');
+        speech.classList.add(position || 'above');
+        speech.classList.add('show');
+    }
+    function hideSpeech() { speech.classList.remove('show'); }
+
+    function resetToggle() {
+        toggle.classList.remove('roaming', 'roaming-fast', 'napping', 'peeking', 'section-wiggle');
+        toggle.style.transform = '';
+        toggle.style.transition = '';
+        zzz.classList.remove('show');
+    }
+    function endBehavior() { resetToggle(); hideSpeech(); busy = false; }
+
+    toggle.addEventListener('click', function() { if (busy) endBehavior(); });
+
+    ['click', 'scroll', 'mousemove', 'keydown', 'touchstart'].forEach(function(ev) {
+        window.addEventListener(ev, function() { lastActivity = Date.now(); }, { passive: true });
+    });
+
+    function wander() {
+        if (busy || blocked()) return;
+        busy = true;
+        lastWander = Date.now();
+        const TH = 130;
+        const x = window.innerWidth - 24 - TH;
+        const y = window.innerHeight - 24 - (TH / 2);
+        toggle.classList.add('section-wiggle');
+        setTimeout(function() { toggle.classList.remove('section-wiggle'); }, 900);
+        showSpeech(x, y, pick(WANDER_MSGS), 'left');
+        setTimeout(function() { hideSpeech(); endBehavior(); }, 4500);
+    }
+
+    function nap() {
+        if (busy || chatIsOpen()) return;
+        busy = true;
+        lastNap = Date.now();
+        toggle.classList.add('napping');
+        zzz.classList.add('show');
+        showSpeech(window.innerWidth - 154, window.innerHeight - 89, pick(NAP_MSGS), 'left');
+        const started = Date.now();
+        const wakeCheck = setInterval(function() {
+            if (chatIsOpen()) { clearInterval(wakeCheck); return; }
+            const sinceActivity = Date.now() - lastActivity;
+            const sinceStart = Date.now() - started;
+            if ((sinceActivity < 1500 && sinceStart > 2500) || sinceStart > 20000) {
+                clearInterval(wakeCheck);
+                if (!chatIsOpen()) endBehavior();
+            }
+        }, 700);
+    }
+
+    function peek() {
+        if (busy || chatIsOpen()) return;
+        busy = true;
+        lastPeek = Date.now();
+        toggle.classList.add('peeking');
+        toggle.style.transform = 'translateX(38px)';
+        setTimeout(function() {
+            if (!busy) return;
+            toggle.style.transform = 'translateX(-4px)';
+            if (Math.random() < 0.55) {
+                setTimeout(function() {
+                    if (busy) showSpeech(window.innerWidth - 154, window.innerHeight - 89, pick(PEEK_MSGS), 'left');
+                }, 200);
+            }
+        }, 500);
+        setTimeout(function() {
+            if (!busy) return;
+            hideSpeech();
+            toggle.style.transform = 'translateX(38px)';
+        }, 2800);
+        setTimeout(function() { if (!chatIsOpen()) endBehavior(); }, 3600);
+    }
+
+    function showSectionTip(el, msg) {
+        if (busy || blocked()) return;
+        busy = true;
+        toggle.classList.add('section-wiggle');
+        const TH = 130;
+        const x = window.innerWidth - 24 - TH;
+        const y = window.innerHeight - 24 - (TH / 2);
+        showSpeech(x, y, msg, 'left');
+        setTimeout(function() { toggle.classList.remove('section-wiggle'); }, 900);
+        setTimeout(function() { endBehavior(); }, 5500);
+    }
+
+    if ('IntersectionObserver' in window) {
+        const obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(en) {
+                if (!en.isIntersecting || blocked() || busy) return;
+                const id = en.target.id;
+                const now = Date.now();
+                if (sectionLastShown[id] && now - sectionLastShown[id] < 150000) return;
+                const sec = SECTIONS.find(function(s) { return s.id === id; });
+                if (!sec) return;
+                sectionLastShown[id] = now;
+                showSectionTip(en.target, sec.msg);
+            });
+        }, { threshold: 0.4 });
+        SECTIONS.forEach(function(s) {
+            const el = document.getElementById(s.id);
+            if (el) obs.observe(el);
+        });
+    }
+
+    setInterval(function() {
+        if (blocked() || busy) return;
+        const now = Date.now();
+        const idle = now - lastActivity;
+        if (idle > 60000 && now - lastNap > 45000) return nap();
+        if (now - lastWander > 60000) return wander();
+        if (now - lastPeek > 40000 && Math.random() < 0.35) return peek();
+    }, 4000);
 })();
 </script>
 
