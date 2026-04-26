@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Recommender | Pearl</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: #0d1117;
+    color: #e0e0e0;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+a { color: #c0392b; text-decoration: none; }
+a:hover { color: #e74c3c; text-decoration: underline; }
+
+.back-link {
+    display: inline-block;
+    padding: 16px 24px;
+    font-size: 14px;
+    color: #888888;
+    transition: color 0.2s;
+}
+.back-link:hover { color: #c0392b; text-decoration: none; }
+
+header {
+    text-align: center;
+    padding: 40px 24px 32px;
+    background: #161b22;
+    border-bottom: 3px solid #c0392b;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+header .author {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px;
+    color: #ffffff;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+header .author span {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #c0392b;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 36px;
+    color: #ffffff;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+header .subtitle {
+    font-size: 16px;
+    color: #7f8c8d;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+}
+
+.section-label {
+    font-size: 12px;
+    color: #c0392b;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    color: #ffffff;
+    margin-bottom: 16px;
+    line-height: 1.3;
+}
+
+.intro { color: #b0b8c0; font-size: 16px; margin-bottom: 32px; }
+
+.wizard {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 32px;
+}
+
+.progress { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+.progress-step {
+    flex: 1; height: 4px; background: #30363d;
+    border-radius: 2px; transition: background 0.3s;
+}
+.progress-step.active { background: #c0392b; }
+.progress-step.done { background: #a93226; }
+.progress-text {
+    font-size: 12px; color: #7f8c8d;
+    text-transform: uppercase; letter-spacing: 1px;
+    min-width: 60px; text-align: right;
+}
+
+.step { display: none; }
+.step.active { display: block; }
+
+.step h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px; color: #ffffff; margin-bottom: 8px;
+}
+.step .step-help { color: #7f8c8d; font-size: 14px; margin-bottom: 24px; }
+
+.choices { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media(min-width: 600px) { .choices.cols-2 { grid-template-columns: 1fr 1fr; } }
+
+.choice {
+    background: #1c2333;
+    border: 1px solid #30363d;
+    color: #e0e0e0;
+    text-align: left;
+    padding: 16px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+}
+.choice:hover { border-color: #c0392b; background: #1f2937; }
+.choice strong { display: block; color: #ffffff; font-weight: 600; margin-bottom: 4px; }
+.choice em { font-style: normal; color: #7f8c8d; font-size: 13px; }
+
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 12px; }
+.btn {
+    background: transparent;
+    border: 1px solid #30363d;
+    color: #b0b8c0;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: all 0.15s;
+}
+.btn:hover { border-color: #c0392b; color: #ffffff; }
+.btn.primary { background: #c0392b; border-color: #c0392b; color: #ffffff; }
+.btn.primary:hover { background: #a93226; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.result {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-left: 4px solid #c0392b;
+    border-radius: 12px;
+    padding: 32px;
+    display: none;
+}
+.result.show { display: block; }
+.result-label {
+    font-size: 12px; color: #c0392b;
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.result h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px; color: #ffffff; margin-bottom: 16px;
+}
+.result p { color: #b0b8c0; margin-bottom: 12px; }
+.result .your-setup {
+    background: #1c2333;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #b0b8c0;
+}
+.result .your-setup strong { color: #ffffff; }
+
+footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: #7f8c8d;
+    font-size: 13px;
+    border-top: 1px solid #30363d;
+}
+
+@media(max-width: 600px) {
+    header h1 { font-size: 28px; }
+    h2 { font-size: 24px; }
+    main { padding: 24px 16px 80px; }
+    .wizard, .result { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">&larr; Back to Pearl</a>
+
+<header>
+    <div class="author">Dr. Semiha B. Sekerli<span>QUANTITATIVE METHODOLOGIST</span></div>
+    <h1>Test Recommender</h1>
+    <p class="subtitle">No data uploaded yet? Answer five quick questions about your research design and Pearl will recommend a statistical test.</p>
+</header>
+
+<main>
+    <div class="section-label">Method Recommender</div>
+    <h2>Find the right test for your research</h2>
+    <p class="intro">Once you have data, head back to <a href="index.html">Pearl's main page</a> to actually run the analysis.</p>
+
+    <div class="wizard" id="wizard">
+        <div class="progress">
+            <div class="progress-step active" data-step="0"></div>
+            <div class="progress-step" data-step="1"></div>
+            <div class="progress-step" data-step="2"></div>
+            <div class="progress-step" data-step="3"></div>
+            <div class="progress-step" data-step="4"></div>
+            <div class="progress-text" id="progressText">Step 1 of 5</div>
+        </div>
+
+        <div class="step active" data-step="0">
+            <h3>What are you trying to learn?</h3>
+            <p class="step-help">Pick the goal that best describes your research question.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="goal" data-value="relationship">
+                    <strong>Find a relationship</strong>
+                    <em>e.g., does X predict Y? are X and Y correlated?</em>
+                </button>
+                <button class="choice" data-key="goal" data-value="differences">
+                    <strong>Compare groups</strong>
+                    <em>e.g., do men and women differ in Y? does treatment matter?</em>
+                </button>
+                <button class="choice" data-key="goal" data-value="prediction">
+                    <strong>Predict an outcome</strong>
+                    <em>e.g., who will pass / fail? who will buy / leave?</em>
+                </button>
+                <button class="choice" data-key="goal" data-value="structure">
+                    <strong>Find underlying structure</strong>
+                    <em>e.g., do these survey items group into factors?</em>
+                </button>
+            </div>
+        </div>
+
+        <div class="step" data-step="1">
+            <h3>What's your dependent variable (outcome)?</h3>
+            <p class="step-help">The variable you want to explain or predict.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="dvType" data-value="quant">
+                    <strong>Quantitative</strong>
+                    <em>numbers — test scores, salary, BMI, time</em>
+                </button>
+                <button class="choice" data-key="dvType" data-value="categ">
+                    <strong>Categorical</strong>
+                    <em>groups — pass/fail, yes/no, A/B/C</em>
+                </button>
+            </div>
+        </div>
+
+        <div class="step" data-step="2">
+            <h3>How many outcomes (DVs) are you measuring?</h3>
+            <p class="step-help">Most studies have one. Multiple DVs change the test.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="dvCount" data-value="1"><strong>One outcome</strong></button>
+                <button class="choice" data-key="dvCount" data-value="2plus"><strong>Two or more outcomes</strong></button>
+            </div>
+        </div>
+
+        <div class="step" data-step="3">
+            <h3>What about your predictors / independent variables?</h3>
+            <p class="step-help">The variable(s) you think influence the outcome.</p>
+            <div class="choices">
+                <button class="choice" data-key="ivType" data-value="quant">
+                    <strong>All quantitative</strong>
+                    <em>numbers — age, income, hours studied</em>
+                </button>
+                <button class="choice" data-key="ivType" data-value="categ">
+                    <strong>All categorical</strong>
+                    <em>groups — gender, condition, treatment</em>
+                </button>
+                <button class="choice" data-key="ivType" data-value="mixed">
+                    <strong>Mixed (some of each)</strong>
+                    <em>e.g., age (quant) + condition (categ)</em>
+                </button>
+            </div>
+        </div>
+
+        <div class="step" data-step="4">
+            <h3>Do you have a covariate to control for?</h3>
+            <p class="step-help">A nuisance variable you want to statistically remove (e.g., pre-test score, age, baseline).</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="covariate" data-value="no"><strong>No</strong></button>
+                <button class="choice" data-key="covariate" data-value="yes"><strong>Yes, one or more</strong></button>
+            </div>
+        </div>
+
+        <div class="nav-row">
+            <button class="btn" id="backBtn" disabled>&larr; Back</button>
+            <button class="btn" id="restartBtn" style="display:none;">Start over</button>
+        </div>
+    </div>
+
+    <div class="result" id="result">
+        <div class="result-label">Pearl's Recommendation</div>
+        <h3 id="resultTest">—</h3>
+        <p id="resultExplain"></p>
+        <div class="your-setup" id="resultSetup"></div>
+        <p style="margin-top:20px;color:#7f8c8d;font-size:14px;">Want to refine? <a href="#" id="restartLink">Start over</a> with different answers, or <a href="index.html">head back to Pearl</a> to upload data and run the test.</p>
+    </div>
+</main>
+
+<footer>
+    Built by Dr. Semiha B. Sekerli &middot; <a href="https://semihasekerli.com/">semihasekerli.com</a>
+</footer>
+
+<script>
+(function(){
+    var state = { goal:null, dvType:null, dvCount:null, ivType:null, covariate:null };
+    var stepCount = 5;
+    var currentStep = 0;
+
+    var wizard = document.getElementById('wizard');
+    var result = document.getElementById('result');
+    var progressText = document.getElementById('progressText');
+    var backBtn = document.getElementById('backBtn');
+    var restartBtn = document.getElementById('restartBtn');
+
+    function showStep(n) {
+        currentStep = n;
+        document.querySelectorAll('.step').forEach(function(s){
+            s.classList.toggle('active', parseInt(s.dataset.step,10) === n);
+        });
+        document.querySelectorAll('.progress-step').forEach(function(p,i){
+            p.classList.remove('active','done');
+            if (i < n) p.classList.add('done');
+            if (i === n) p.classList.add('active');
+        });
+        progressText.textContent = 'Step ' + (n+1) + ' of ' + stepCount;
+        backBtn.disabled = (n === 0);
+        restartBtn.style.display = 'none';
+        wizard.style.display = 'block';
+        result.classList.remove('show');
+    }
+
+    function chooseNext(key, value) {
+        state[key] = value;
+        if (state.goal === 'structure') return finalize();
+        if (state.goal === 'prediction' && currentStep === 0) {
+            state.dvType = 'categ';
+            return showStep(2);
+        }
+        if (currentStep >= stepCount - 1) return finalize();
+        showStep(currentStep + 1);
+    }
+
+    function recommend() {
+        var s = state;
+        if (s.goal === 'structure') {
+            return {
+                test: 'Factor Analysis or Principal Component Analysis (PCA)',
+                why: 'You want to find latent structure underlying multiple variables. Factor Analysis tests whether a set of observed variables reflect fewer underlying factors (good for theory-driven work). PCA reduces variables to fewer composite components (good for data reduction). Use 3+ quantitative variables.'
+            };
+        }
+        if (s.goal === 'prediction') {
+            return {
+                test: s.dvCount === '2plus' ? 'Multinomial Logistic Regression or Discriminant Analysis' : 'Binary Logistic Regression',
+                why: s.dvCount === '2plus'
+                    ? 'You\'re predicting which of three or more categories an observation belongs to. Multinomial Logistic Regression handles this when predictors are mixed; Discriminant Analysis assumes multivariate normality of the predictors.'
+                    : 'You\'re predicting a yes/no (or pass/fail) outcome. Binary Logistic Regression models the probability of one category given your predictors.'
+            };
+        }
+        if (s.goal === 'relationship') {
+            if (s.dvType === 'quant' && s.ivType === 'quant') {
+                if (s.dvCount === '2plus') {
+                    return { test: 'Path Analysis', why: 'Multiple quantitative outcomes and quantitative predictors with hypothesized directional relationships call for Path Analysis (a special case of structural equation modeling).' };
+                }
+                return s.covariate === 'yes' || s.ivType === 'quant'
+                    ? { test: 'Multiple Regression (or Bivariate Correlation if 1 IV)', why: 'Quantitative outcome predicted by quantitative predictor(s). With a single IV and no controls, Bivariate Correlation describes the relationship. With 2+ IVs (or covariates), Multiple Regression estimates each predictor\'s unique contribution.' }
+                    : { test: 'Bivariate Correlation', why: 'One quantitative outcome and one quantitative predictor — Pearson\'s r tests the strength and direction of their linear relationship.' };
+            }
+            if (s.dvType === 'categ' && s.ivType === 'categ') {
+                return { test: 'Chi-Square Test of Independence', why: 'Both variables are categorical — Chi-Square tests whether the categories are associated more than expected by chance.' };
+            }
+            return { test: 'Logistic Regression (if DV is categorical) or Multiple Regression (if DV is quantitative)', why: 'Mixed predictor types are fine for either. Choose based on your DV type — categorical DV → Logistic; quantitative DV → Multiple Regression.' };
+        }
+        if (s.dvType === 'categ') {
+            return { test: 'Chi-Square Test of Independence', why: 'When you\'re comparing groups on a categorical outcome, Chi-Square tests whether the distribution of categories differs across groups.' };
+        }
+        var multipleDV = s.dvCount === '2plus';
+        var hasCov = s.covariate === 'yes';
+        if (multipleDV && hasCov) return { test: 'MANCOVA (or Factorial MANCOVA if 2+ IVs)', why: 'Multiple quantitative outcomes, group differences, AND a covariate — MANCOVA tests group effects on a set of DVs while statistically controlling for the covariate.' };
+        if (multipleDV) return { test: 'MANOVA (or Factorial MANOVA if 2+ IVs)', why: 'Multiple quantitative outcomes compared across groups — MANOVA tests whether groups differ on the combined set of DVs.' };
+        if (hasCov) return { test: 'ANCOVA (or Factorial ANCOVA if 2+ IVs)', why: 'One quantitative outcome, comparing groups, with a covariate — ANCOVA controls for the covariate before testing group differences.' };
+        return { test: 't-Test (2 groups) or One-Way ANOVA (3+ groups); Factorial ANOVA if 2+ IVs', why: 'Quantitative outcome compared across groups. Use t-Test for two groups, One-Way ANOVA for three or more, and Factorial ANOVA when you have multiple grouping IVs (e.g., gender × condition).' };
+    }
+
+    function finalize() {
+        var rec = recommend();
+        document.getElementById('resultTest').textContent = rec.test;
+        document.getElementById('resultExplain').textContent = rec.why;
+        var setupBits = [];
+        if (state.goal) setupBits.push('<strong>Goal:</strong> ' + ({relationship:'Find a relationship',differences:'Compare groups',prediction:'Predict an outcome',structure:'Find structure'}[state.goal]));
+        if (state.dvType) setupBits.push('<strong>DV:</strong> ' + (state.dvType==='quant'?'quantitative':'categorical'));
+        if (state.dvCount) setupBits.push('<strong>DVs:</strong> ' + (state.dvCount==='1'?'1':'2+'));
+        if (state.ivType) setupBits.push('<strong>IV(s):</strong> ' + ({quant:'quantitative',categ:'categorical',mixed:'mixed'}[state.ivType]));
+        if (state.covariate) setupBits.push('<strong>Covariate:</strong> ' + (state.covariate==='yes'?'yes':'no'));
+        document.getElementById('resultSetup').innerHTML = 'Your setup &mdash; ' + setupBits.join(' &middot; ');
+        wizard.style.display = 'none';
+        result.classList.add('show');
+        restartBtn.style.display = '';
+    }
+
+    document.querySelectorAll('.choice').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            chooseNext(btn.dataset.key, btn.dataset.value);
+        });
+    });
+
+    backBtn.addEventListener('click', function(){
+        if (currentStep > 0) showStep(currentStep - 1);
+    });
+
+    function reset() {
+        state = { goal:null, dvType:null, dvCount:null, ivType:null, covariate:null };
+        wizard.style.display = 'block';
+        showStep(0);
+    }
+    restartBtn.addEventListener('click', reset);
+    document.getElementById('restartLink').addEventListener('click', function(e){ e.preventDefault(); reset(); });
+
+    showStep(0);
+})();
+</script>
+
+</body>
+</html>

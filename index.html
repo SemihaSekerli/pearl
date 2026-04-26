@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pearl &middot; Statistics for Doctoral Researchers</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jstat@1.9.6/dist/jstat.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: #0d1117;
+    color: #e0e0e0;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+a { color: #c0392b; text-decoration: none; }
+a:hover { color: #e74c3c; text-decoration: underline; }
+
+.back-link {
+    display: inline-block;
+    padding: 16px 24px;
+    font-size: 14px;
+    color: #888888;
+}
+.back-link:hover { color: #c0392b; text-decoration: none; }
+
+header {
+    text-align: center;
+    padding: 40px 24px 32px;
+    background: #161b22;
+    border-bottom: 3px solid #c0392b;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+header .author {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px;
+    color: #ffffff;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+header .author span {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #c0392b;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 40px;
+    color: #ffffff;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+header h1 .pearl-emoji { font-size: 32px; vertical-align: middle; }
+header .subtitle {
+    font-size: 16px;
+    color: #7f8c8d;
+    max-width: 720px;
+    margin: 0 auto;
+}
+header .hero-description {
+    font-size: 15px;
+    color: #b0b8c0;
+    max-width: 720px;
+    margin: 20px auto 0;
+    line-height: 1.7;
+}
+header .hero-cta {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+}
+header .hero-btn {
+    display: inline-block;
+    padding: 12px 28px;
+    background: #c0392b;
+    color: #ffffff;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid #c0392b;
+    transition: all 0.15s;
+}
+header .hero-btn:hover {
+    background: #a93226;
+    border-color: #a93226;
+    color: #ffffff;
+    text-decoration: none;
+}
+header .hero-recommender {
+    max-width: 760px;
+    margin: 36px auto 0;
+    padding: 26px 32px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #b0b8c0;
+    font-size: 18px;
+    line-height: 1.5;
+}
+header .hero-recommender a {
+    color: #c0392b;
+    font-weight: 700;
+    white-space: nowrap;
+}
+header .hero-recommender a:hover { color: #e74c3c; }
+@media(max-width: 600px) {
+    header .hero-recommender { font-size: 16px; padding: 20px 22px; }
+    header .hero-recommender a { white-space: normal; display: inline-block; margin-top: 4px; }
+}
+
+main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+}
+
+.section-label {
+    font-size: 12px;
+    color: #c0392b;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    color: #ffffff;
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.intro {
+    color: #b0b8c0;
+    font-size: 16px;
+    margin-bottom: 28px;
+}
+
+.privacy-note {
+    background: #1c2333;
+    border-left: 3px solid #27ae60;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #b0b8c0;
+    margin-bottom: 28px;
+}
+.privacy-note strong { color: #27ae60; }
+
+/* Upload zone */
+.upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #161b22;
+    border: 2px dashed #30363d;
+    border-radius: 12px;
+    padding: 64px 32px;
+    min-height: 240px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 32px;
+}
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: #c0392b;
+    background: #1c2333;
+}
+.upload-zone .icon {
+    font-size: 56px;
+    line-height: 1;
+    margin-bottom: 18px;
+    color: #c0392b;
+}
+.upload-zone .primary-text {
+    font-size: 19px;
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+.upload-zone .secondary-text {
+    font-size: 14px;
+    color: #7f8c8d;
+    line-height: 1.5;
+}
+.upload-zone input[type="file"] { display: none; }
+
+/* Loaded data section */
+.data-section { display: none; }
+.data-section.show { display: block; }
+
+.card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.card-header h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px;
+    color: #ffffff;
+}
+.file-meta { font-size: 13px; color: #7f8c8d; }
+.file-meta strong { color: #e0e0e0; }
+
+/* Data preview table */
+.preview-table-wrap {
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid #30363d;
+}
+table.preview {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+table.preview th, table.preview td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #30363d;
+    white-space: nowrap;
+}
+table.preview th {
+    background: #1c2333;
+    color: #ffffff;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+table.preview .col-type {
+    display: block;
+    font-size: 10px;
+    color: #c0392b;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-top: 2px;
+}
+table.preview .col-type.categ { color: #f39c12; }
+table.preview tr:hover td { background: #1c2333; }
+
+/* Test picker */
+.tests {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.test-btn {
+    background: #1c2333;
+    border: 1px solid #30363d;
+    color: #e0e0e0;
+    text-align: left;
+    padding: 16px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.4;
+}
+.test-btn:hover { border-color: #c0392b; background: #232b3d; }
+.test-btn.active {
+    border-color: #c0392b;
+    background: #2a1f24;
+}
+.test-btn strong { display: block; color: #ffffff; font-weight: 600; margin-bottom: 4px; font-size: 16px; }
+.test-btn em { font-style: normal; color: #7f8c8d; font-size: 13px; }
+
+/* Test config */
+.test-config {
+    background: #1c2333;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+    display: none;
+}
+.test-config.show { display: block; }
+.test-config h4 {
+    font-size: 14px;
+    color: #c0392b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+.config-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.config-field { flex: 1; min-width: 180px; }
+.config-field label {
+    display: block;
+    font-size: 12px;
+    color: #b0b8c0;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.config-field select {
+    width: 100%;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #ffffff;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+}
+.config-field select:focus { outline: none; border-color: #c0392b; }
+
+.btn {
+    background: #c0392b;
+    border: 1px solid #c0392b;
+    color: #ffffff;
+    padding: 10px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+.btn:hover { background: #a93226; border-color: #a93226; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.ghost {
+    background: transparent;
+    color: #b0b8c0;
+}
+.btn.ghost:hover { background: #1c2333; color: #ffffff; }
+
+.config-error {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 8px;
+}
+.predictor-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #b0b8c0;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+}
+.predictor-chip:hover { border-color: #c0392b; color: #ffffff; }
+.predictor-chip.selected {
+    background: #c0392b;
+    border-color: #c0392b;
+    color: #ffffff;
+}
+.predictor-chip input { display: none; }
+
+/* Results */
+.results { display: none; }
+.results.show { display: block; }
+
+.result-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-left: 4px solid #c0392b;
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+}
+.result-card .result-label {
+    font-size: 12px;
+    color: #c0392b;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.result-card h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 24px;
+    color: #ffffff;
+    margin-bottom: 16px;
+}
+.interpretation {
+    background: #1c2333;
+    padding: 16px 18px;
+    border-radius: 6px;
+    color: #e0e0e0;
+    margin: 16px 0;
+    font-size: 15px;
+    line-height: 1.6;
+}
+.interpretation strong { color: #ffffff; }
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 12px;
+}
+.stats-table th, .stats-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #30363d;
+}
+.stats-table th {
+    background: #1c2333;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.stats-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stats-table th.num { text-align: right; }
+
+.sig-yes { color: #27ae60; font-weight: 600; }
+.sig-no { color: #f39c12; font-weight: 600; }
+
+.result-chart-wrap {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+.result-chart-wrap h4 {
+    color: #c0392b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+.result-chart-wrap canvas { width: 100%; display: block; }
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+}
+.chart-grid .chart-tile {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px 12px;
+}
+.chart-grid .chart-tile .tile-label {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.apa-copy-btn {
+    margin-top: 14px;
+    background: transparent;
+    border: 1px solid #30363d;
+    color: #b0b8c0;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.apa-copy-btn:hover { border-color: #c0392b; color: #ffffff; }
+.apa-copy-btn.copied { border-color: #27ae60; color: #27ae60; }
+
+/* Pearl chat widget (mirrors Chico's pattern) */
+#chatWidget { position: fixed; bottom: 24px; right: 24px; z-index: 9999; font-family: 'Inter', sans-serif; }
+#chatToggle {
+    width: 130px; height: 130px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.3s, filter 0.3s;
+    display: flex; align-items: center; justify-content: center;
+    animation: chatBounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 4px 14px rgba(64, 224, 208, 0.35));
+}
+#chatToggle:hover { transform: scale(1.12); filter: drop-shadow(0 6px 18px rgba(64, 224, 208, 0.6)); }
+#chatToggle.open { animation: none; }
+#chatToggle img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+@keyframes chatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+#chatWindow {
+    display: none;
+    position: fixed; bottom: 165px; right: 24px;
+    width: 420px; max-width: calc(100vw - 48px);
+    height: 580px; max-height: calc(100vh - 140px);
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    flex-direction: column;
+    overflow: hidden;
+}
+#chatWindow.open { display: flex; }
+#chatHeader {
+    background: #c0392b;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#chatHeader h4 { color: #fff; font-size: 14px; font-weight: 700; margin: 0; }
+#chatHeader span { color: rgba(255,255,255,0.75); font-size: 11px; }
+#chatClose { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 0 4px; }
+#chatMessages {
+    flex: 1; overflow-y: auto;
+    padding: 16px;
+    display: flex; flex-direction: column;
+    gap: 12px;
+}
+.chat-msg {
+    max-width: 92%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.chat-msg.bot { background: #1c2333; color: #e0e0e0; align-self: flex-start; border: 1px solid #30363d; }
+.chat-msg.user { background: #c0392b; color: #fff; align-self: flex-end; }
+.chat-msg.bot a { color: #f1948a; text-decoration: underline; }
+.chat-msg b, .chat-msg strong { color: #ffffff; }
+#chatInputArea {
+    display: flex;
+    border-top: 1px solid #30363d;
+    padding: 10px;
+    gap: 8px;
+    background: #0d1117;
+}
+#chatInput {
+    flex: 1;
+    background: #1c2333;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: #e0e0e0;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+}
+#chatInput:focus { border-color: #c0392b; }
+#chatSend {
+    background: #c0392b;
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+#chatSend:hover { background: #a93226; }
+#chatSend:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 480px) {
+    #chatWindow { width: calc(100vw - 16px); right: 8px; bottom: 130px; height: calc(100vh - 160px); }
+    #chatToggle { width: 100px; height: 100px; }
+}
+
+footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: #7f8c8d;
+    font-size: 13px;
+    border-top: 1px solid #30363d;
+}
+
+@media(max-width: 600px) {
+    header h1 { font-size: 30px; }
+    h2 { font-size: 24px; }
+    main { padding: 24px 16px 100px; }
+    .card { padding: 20px; }
+    .upload-zone { padding: 32px 16px; }
+}
+
+/* Print stylesheet — save results as PDF via Ctrl+P -> Save as PDF */
+@media print {
+    body { background: #ffffff; color: #000000; }
+    a { color: #000000; text-decoration: none; }
+    header, footer, .back-link, .upload-zone, .hero-cta, .hero-recommender,
+    #chatWidget, .test-config, .tests, .card-header > .file-meta,
+    .apa-copy-btn { display: none !important; }
+    main { max-width: 100%; padding: 16px; }
+    .card { background: #ffffff !important; border: 1px solid #cccccc !important; padding: 16px; box-shadow: none; break-inside: avoid; }
+    h2, h3, h4 { color: #000000 !important; }
+    p, .intro { color: #333333 !important; }
+    .result-card { background: #ffffff !important; border: 1px solid #cccccc !important; border-left: 4px solid #c0392b !important; break-inside: avoid; }
+    .result-chart-wrap { background: #ffffff !important; border: 1px solid #dddddd !important; break-inside: avoid; }
+    .interpretation { background: #f5f5f5 !important; color: #000000 !important; }
+    .interpretation strong { color: #000000 !important; }
+    .stats-table { color: #000000 !important; }
+    .stats-table th { background: #f0f0f0 !important; color: #000000 !important; }
+    .stats-table td { color: #000000 !important; border-color: #cccccc !important; }
+    .sig-yes { color: #006633 !important; }
+    .sig-no { color: #cc6600 !important; }
+    .data-section h3, .file-meta { color: #000000 !important; }
+    .preview-table-wrap, table.preview { display: none; }
+    canvas { max-width: 100% !important; height: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<a href="https://semihasekerli.com/" class="back-link">&larr; Back to home</a>
+
+<header>
+    <div class="author">Dr. Semiha B. Sekerli, Ph.D.<span>QUANTITATIVE METHODOLOGIST</span></div>
+    <h1><span class="pearl-emoji">&#128008;</span> Pearl</h1>
+    <p class="subtitle">A Web-Based Statistics Tool for Doctoral Researchers</p>
+    <p class="hero-description">Pearl is Chico's little brother &mdash; Dr. Semiha B. Sekerli's open-access quantitative methodology tool. Upload your data, pick a test, and Pearl will run the analysis and interpret the results in plain language. Built for doctoral students and researchers who want SPSS-level analysis without the price tag &mdash; and your data never leaves your browser.</p>
+    <div class="hero-cta">
+        <a href="#uploadZone" class="hero-btn">Get Started</a>
+        <a href="https://semihasekerli.com/" class="hero-btn">Work With Dr. Sekerli</a>
+    </div>
+    <div class="hero-recommender">
+        Don't have data yet, or unsure which test fits? <a href="#" id="askPearlLink">Ask Pearl &mdash; he'll walk you through it &rarr;</a>
+    </div>
+</header>
+
+<main>
+    <div class="section-label">Phase 1 &middot; Descriptives, t-Test, Correlation</div>
+    <h2>Upload your data to get started</h2>
+    <p class="intro">CSV files only for now. Pearl will detect each column's type and show you a preview before you pick a test.</p>
+
+    <div class="privacy-note">
+        <strong>Your data stays in your browser.</strong> Nothing gets uploaded to a server. All calculations happen on your device.
+    </div>
+
+    <label class="upload-zone" id="uploadZone">
+        <div class="icon">&#128206;</div>
+        <div class="primary-text">Drop a CSV here, or click to browse</div>
+        <div class="secondary-text">First row should be column headers</div>
+        <input type="file" id="fileInput" accept=".csv,text/csv">
+    </label>
+
+    <!-- Loaded data section -->
+    <div class="data-section" id="dataSection">
+        <!-- Preview card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Data Preview</h3>
+                <div class="file-meta" id="fileMeta"></div>
+            </div>
+            <div class="preview-table-wrap">
+                <table class="preview" id="previewTable"></table>
+            </div>
+        </div>
+
+        <!-- Test picker card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Pick an analysis</h3>
+            </div>
+            <div class="tests">
+                <button class="test-btn" data-test="descriptives">
+                    <strong>Descriptive Statistics</strong>
+                    <em>Means, SDs, frequencies for every column</em>
+                </button>
+                <button class="test-btn" data-test="ttest">
+                    <strong>Independent t-Test</strong>
+                    <em>Compare a quantitative outcome between 2 groups</em>
+                </button>
+                <button class="test-btn" data-test="correlation">
+                    <strong>Pearson Correlation</strong>
+                    <em>Measure the linear relationship between 2 quant variables</em>
+                </button>
+                <button class="test-btn" data-test="anova">
+                    <strong>One-Way ANOVA</strong>
+                    <em>Compare a quantitative outcome across 3+ groups</em>
+                </button>
+                <button class="test-btn" data-test="chisquare">
+                    <strong>Chi-Square Test</strong>
+                    <em>Test whether two categorical variables are associated</em>
+                </button>
+                <button class="test-btn" data-test="regression">
+                    <strong>Simple Linear Regression</strong>
+                    <em>Predict a quantitative outcome from one predictor</em>
+                </button>
+                <button class="test-btn" data-test="multireg">
+                    <strong>Multiple Regression</strong>
+                    <em>Predict an outcome from 2+ quantitative predictors</em>
+                </button>
+            </div>
+
+            <!-- Descriptives config -->
+            <div class="test-config" id="config-descriptives">
+                <h4>No options needed</h4>
+                <p style="font-size:14px;color:#b0b8c0;margin-bottom:14px;">Pearl will summarize every column. Quantitative columns get mean/SD/median/min/max. Categorical columns get frequency counts.</p>
+                <button class="btn" id="run-descriptives">Run descriptives</button>
+            </div>
+
+            <!-- t-test config -->
+            <div class="test-config" id="config-ttest">
+                <h4>Configure t-test</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="ttest-dv">Dependent variable (quantitative)</label>
+                        <select id="ttest-dv"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="ttest-iv">Independent variable (categorical, 2 levels)</label>
+                        <select id="ttest-iv"></select>
+                    </div>
+                </div>
+                <button class="btn" id="run-ttest">Run t-test</button>
+                <div class="config-error" id="ttest-error"></div>
+            </div>
+
+            <!-- Correlation config -->
+            <div class="test-config" id="config-correlation">
+                <h4>Configure correlation</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="corr-x">Variable X (quantitative)</label>
+                        <select id="corr-x"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="corr-y">Variable Y (quantitative)</label>
+                        <select id="corr-y"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="corr-method">Method</label>
+                        <select id="corr-method">
+                            <option value="pearson">Pearson (linear)</option>
+                            <option value="spearman">Spearman (rank, non-parametric)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" id="run-correlation">Run correlation</button>
+                <div class="config-error" id="correlation-error"></div>
+            </div>
+
+            <!-- ANOVA config -->
+            <div class="test-config" id="config-anova">
+                <h4>Configure One-Way ANOVA</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="anova-dv">Dependent variable (quantitative)</label>
+                        <select id="anova-dv"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="anova-iv">Independent variable (categorical, 2+ levels)</label>
+                        <select id="anova-iv"></select>
+                    </div>
+                </div>
+                <button class="btn" id="run-anova">Run ANOVA</button>
+                <div class="config-error" id="anova-error"></div>
+            </div>
+
+            <!-- Chi-Square config -->
+            <div class="test-config" id="config-chisquare">
+                <h4>Configure Chi-Square Test of Independence</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="chi-var1">Row variable (categorical)</label>
+                        <select id="chi-var1"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="chi-var2">Column variable (categorical)</label>
+                        <select id="chi-var2"></select>
+                    </div>
+                </div>
+                <button class="btn" id="run-chisquare">Run chi-square</button>
+                <div class="config-error" id="chisquare-error"></div>
+            </div>
+
+            <!-- Regression config -->
+            <div class="test-config" id="config-regression">
+                <h4>Configure Simple Linear Regression</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="reg-x">Independent variable (quantitative)</label>
+                        <select id="reg-x"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="reg-y">Dependent variable (quantitative)</label>
+                        <select id="reg-y"></select>
+                    </div>
+                </div>
+                <button class="btn" id="run-regression">Run regression</button>
+                <div class="config-error" id="regression-error"></div>
+            </div>
+
+            <!-- Multiple Regression config -->
+            <div class="test-config" id="config-multireg">
+                <h4>Configure Multiple Regression</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="multireg-y">Dependent variable (quantitative)</label>
+                        <select id="multireg-y"></select>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Independent variables (pick 2 or more)</label>
+                    <div id="multireg-predictors" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+                <button class="btn" id="run-multireg" style="margin-top:14px;">Run multiple regression</button>
+                <div class="config-error" id="multireg-error"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results"></div>
+    </div>
+</main>
+
+<div id="chatWidget">
+    <div id="chatWindow">
+        <div id="chatHeader">
+            <div>
+                <h4>&#128008; Pearl &middot; Statistics Tutor</h4>
+                <span>by Dr. Semiha B. Sekerli &middot; Chico's little brother</span>
+            </div>
+            <button id="chatClose" aria-label="Close chat">&times;</button>
+        </div>
+        <div id="chatMessages"></div>
+        <div id="chatInputArea">
+            <input type="text" id="chatInput" placeholder="Ask Pearl about your data or a stats question..." autocomplete="off">
+            <button id="chatSend">Send</button>
+        </div>
+    </div>
+    <button id="chatToggle" title="Chat with Pearl"><img src="assets/pearl-robot.png" alt="Pearl" onerror="this.outerHTML='&#128008;';this.parentNode.style.fontSize='42px';this.parentNode.style.background='#c0392b';this.parentNode.style.border='3px solid #e74c3c';this.parentNode.style.borderRadius='50%';this.parentNode.style.color='#fff';this.parentNode.style.width='80px';this.parentNode.style.height='80px';"></button>
+</div>
+
+<footer>
+    Built by Dr. Semiha B. Sekerli &middot; <a href="https://semihasekerli.com/">semihasekerli.com</a>
+</footer>
+
+<script>
+(function(){
+    const state = {
+        rows: [],
+        columns: [],
+        filename: null
+    };
+
+    // ---------- Upload ----------
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+
+    fileInput.addEventListener('change', function(e){
+        if (e.target.files[0]) handleFile(e.target.files[0]);
+    });
+
+    ['dragenter','dragover'].forEach(ev => uploadZone.addEventListener(ev, function(e){
+        e.preventDefault(); e.stopPropagation();
+        uploadZone.classList.add('dragover');
+    }));
+    ['dragleave','drop'].forEach(ev => uploadZone.addEventListener(ev, function(e){
+        e.preventDefault(); e.stopPropagation();
+        uploadZone.classList.remove('dragover');
+    }));
+    uploadZone.addEventListener('drop', function(e){
+        const file = e.dataTransfer.files[0];
+        if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+        state.filename = file.name;
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            dynamicTyping: false,
+            complete: function(res) {
+                if (!res.data || res.data.length === 0) {
+                    alert('Pearl could not read any rows from this file. Make sure the first row contains column headers.');
+                    return;
+                }
+                state.rows = res.data;
+                detectColumns();
+                renderPreview();
+                populateSelectors();
+                document.getElementById('dataSection').classList.add('show');
+                document.getElementById('results').classList.remove('show');
+                document.getElementById('results').innerHTML = '';
+            },
+            error: function(err) {
+                alert('Error reading file: ' + err.message);
+            }
+        });
+    }
+
+    // ---------- Column detection ----------
+    function detectColumns() {
+        const headers = Object.keys(state.rows[0] || {});
+        state.columns = headers.map(name => {
+            const raw = state.rows.map(r => r[name]);
+            const nonMissing = raw.filter(v => v !== null && v !== undefined && String(v).trim() !== '');
+            const numeric = nonMissing.map(v => parseFloat(v)).filter(v => !isNaN(v));
+            const isQuant = nonMissing.length > 0 && numeric.length / nonMissing.length >= 0.9;
+            return {
+                name,
+                type: isQuant ? 'quant' : 'categ',
+                raw,
+                quantValues: isQuant ? numeric : null,
+                categValues: isQuant ? null : nonMissing.map(String),
+                nMissing: raw.length - nonMissing.length,
+                n: nonMissing.length
+            };
+        });
+    }
+
+    function renderPreview() {
+        const table = document.getElementById('previewTable');
+        const previewRows = state.rows.slice(0, 8);
+        let html = '<thead><tr>';
+        state.columns.forEach(c => {
+            const typeLabel = c.type === 'quant' ? 'Quantitative' : 'Categorical';
+            html += `<th>${escapeHtml(c.name)}<span class="col-type ${c.type}">${typeLabel}</span></th>`;
+        });
+        html += '</tr></thead><tbody>';
+        previewRows.forEach(r => {
+            html += '<tr>';
+            state.columns.forEach(c => {
+                const v = r[c.name];
+                html += `<td>${v === null || v === undefined || v === '' ? '<span style="color:#555">—</span>' : escapeHtml(String(v))}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody>';
+        table.innerHTML = html;
+
+        const meta = document.getElementById('fileMeta');
+        const quantCount = state.columns.filter(c => c.type === 'quant').length;
+        const categCount = state.columns.filter(c => c.type === 'categ').length;
+        meta.innerHTML = `<strong>${escapeHtml(state.filename)}</strong> &middot; ${state.rows.length} rows &middot; ${state.columns.length} columns (${quantCount} quant, ${categCount} categ) &middot; showing first ${previewRows.length}`;
+    }
+
+    // ---------- Test picker ----------
+    document.querySelectorAll('.test-btn').forEach(btn => {
+        btn.addEventListener('click', function(){
+            const test = btn.dataset.test;
+            document.querySelectorAll('.test-btn').forEach(b => b.classList.toggle('active', b === btn));
+            document.querySelectorAll('.test-config').forEach(c => c.classList.remove('show'));
+            document.getElementById('config-' + test).classList.add('show');
+        });
+    });
+
+    function populateSelectors() {
+        const quantCols = state.columns.filter(c => c.type === 'quant');
+        const categCols = state.columns.filter(c => c.type === 'categ');
+
+        fillSelect('ttest-dv', quantCols);
+        fillSelect('ttest-iv', categCols);
+        fillSelect('corr-x', quantCols);
+        fillSelect('corr-y', quantCols, 1);
+        fillSelect('anova-dv', quantCols);
+        fillSelect('anova-iv', categCols);
+        fillSelect('chi-var1', categCols);
+        fillSelect('chi-var2', categCols, 1);
+        fillSelect('reg-x', quantCols);
+        fillSelect('reg-y', quantCols, 1);
+        fillSelect('multireg-y', quantCols);
+        fillPredictorChips('multireg-predictors', quantCols);
+    }
+
+    function fillPredictorChips(containerId, cols) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        cols.forEach(c => {
+            const label = document.createElement('label');
+            label.className = 'predictor-chip';
+            label.innerHTML = `<input type="checkbox" value="${escapeHtml(c.name)}"><span>${escapeHtml(c.name)}</span>`;
+            const input = label.querySelector('input');
+            input.addEventListener('change', () => {
+                label.classList.toggle('selected', input.checked);
+            });
+            container.appendChild(label);
+        });
+    }
+
+    function fillSelect(id, cols, defaultIndex) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '';
+        if (cols.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '(no compatible columns)';
+            opt.disabled = true;
+            sel.appendChild(opt);
+            return;
+        }
+        cols.forEach((c, i) => {
+            const opt = document.createElement('option');
+            opt.value = c.name;
+            opt.textContent = c.name;
+            sel.appendChild(opt);
+        });
+        if (defaultIndex !== undefined && defaultIndex < cols.length) {
+            sel.selectedIndex = defaultIndex;
+        }
+    }
+
+    function getColumn(name) {
+        return state.columns.find(c => c.name === name);
+    }
+
+    // ---------- Stats helpers ----------
+    function descriptiveQuant(values) {
+        const n = values.length;
+        const mean = jStat.mean(values);
+        const sd = jStat.stdev(values, true);
+        const median = jStat.median(values);
+        const min = jStat.min(values);
+        const max = jStat.max(values);
+        return { n, mean, sd, median, min, max };
+    }
+
+    function frequencyTable(values) {
+        const counts = {};
+        values.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+        const total = values.length;
+        return Object.keys(counts)
+            .map(k => ({ value: k, count: counts[k], pct: counts[k] / total * 100 }))
+            .sort((a, b) => b.count - a.count);
+    }
+
+    function welchTTest(g1, g2) {
+        const n1 = g1.length, n2 = g2.length;
+        const m1 = jStat.mean(g1), m2 = jStat.mean(g2);
+        const v1 = jStat.variance(g1, true), v2 = jStat.variance(g2, true);
+        const sd1 = Math.sqrt(v1), sd2 = Math.sqrt(v2);
+        const se = Math.sqrt(v1 / n1 + v2 / n2);
+        const t = (m1 - m2) / se;
+        // Welch-Satterthwaite df
+        const df = Math.pow(v1 / n1 + v2 / n2, 2) /
+            (Math.pow(v1 / n1, 2) / (n1 - 1) + Math.pow(v2 / n2, 2) / (n2 - 1));
+        const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+        // Cohen's d (using pooled SD for effect size)
+        const pooledSD = Math.sqrt(((n1 - 1) * v1 + (n2 - 1) * v2) / (n1 + n2 - 2));
+        const d = (m1 - m2) / pooledSD;
+        return { t, df, p, m1, m2, sd1, sd2, n1, n2, d };
+    }
+
+    function pearsonCorrelation(x, y) {
+        const r = jStat.corrcoeff(x, y);
+        const n = x.length;
+        const df = n - 2;
+        const t = r * Math.sqrt(df) / Math.sqrt(1 - r * r);
+        const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+        return { r, n, df, t, p };
+    }
+
+    function renderTukeyHSD(groups, msWithin, dfWithin) {
+        const k = groups.length;
+        const pairs = [];
+        for (let i = 0; i < k; i++) {
+            for (let j = i + 1; j < k; j++) {
+                const m1 = jStat.mean(groups[i].values);
+                const m2 = jStat.mean(groups[j].values);
+                const n1 = groups[i].values.length;
+                const n2 = groups[j].values.length;
+                const nh = 2 / (1/n1 + 1/n2);
+                const se = Math.sqrt(msWithin / nh);
+                const meanDiff = m1 - m2;
+                const q = Math.abs(meanDiff) / se;
+                let p;
+                try { p = 1 - jStat.tukey.cdf(q, k, dfWithin); }
+                catch (e) { p = NaN; }
+                if (isNaN(p) || p < 0) p = 0;
+                if (p > 1) p = 1;
+                pairs.push({ a: groups[i].name, b: groups[j].name, meanDiff, se, q, p });
+            }
+        }
+        const rows = pairs.map(pp =>
+            `<tr><td><strong>${escapeHtml(pp.a)}</strong> vs <strong>${escapeHtml(pp.b)}</strong></td>
+            <td class="num">${fmt(pp.meanDiff)}</td>
+            <td class="num">${fmt(pp.se)}</td>
+            <td class="num">${fmt(pp.q)}</td>
+            <td class="num">${fmtP(pp.p)}</td>
+            <td><span class="${pp.p < 0.05 ? 'sig-yes' : 'sig-no'}">${pp.p < 0.05 ? 'sig.' : 'ns'}</span></td></tr>`
+        ).join('');
+        return `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Tukey HSD Post-Hoc Comparisons</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Pair</th><th class="num">Mean diff</th><th class="num">SE</th><th class="num">q</th><th class="num">p (Tukey)</th><th>Sig.</th>
+            </tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    function oneWayANOVA(groups) {
+        const k = groups.length;
+        const allValues = groups.flatMap(g => g.values);
+        const n = allValues.length;
+        const grandMean = jStat.mean(allValues);
+
+        let ssBetween = 0, ssWithin = 0;
+        const groupStats = groups.map(g => {
+            const m = jStat.mean(g.values);
+            ssBetween += g.values.length * Math.pow(m - grandMean, 2);
+            g.values.forEach(v => { ssWithin += Math.pow(v - m, 2); });
+            return { name: g.name, n: g.values.length, mean: m, sd: jStat.stdev(g.values, true) };
+        });
+
+        const dfBetween = k - 1;
+        const dfWithin = n - k;
+        const msBetween = ssBetween / dfBetween;
+        const msWithin = ssWithin / dfWithin;
+        const F = msBetween / msWithin;
+        const p = 1 - jStat.centralF.cdf(F, dfBetween, dfWithin);
+        const eta2 = ssBetween / (ssBetween + ssWithin);
+
+        return { F, dfBetween, dfWithin, p, ssBetween, ssWithin, msBetween, msWithin, eta2, k, n, groupStats };
+    }
+
+    function chiSquareIndependence(pairs) {
+        const rowLevels = [...new Set(pairs.map(p => p.row))].sort();
+        const colLevels = [...new Set(pairs.map(p => p.col))].sort();
+        const observed = rowLevels.map(rl => colLevels.map(cl =>
+            pairs.filter(p => p.row === rl && p.col === cl).length
+        ));
+        const rowTotals = observed.map(row => row.reduce((a, b) => a + b, 0));
+        const colTotals = colLevels.map((_, j) => observed.reduce((s, row) => s + row[j], 0));
+        const total = pairs.length;
+        const expected = rowLevels.map((_, i) => colLevels.map((_, j) => rowTotals[i] * colTotals[j] / total));
+
+        let chi2 = 0;
+        for (let i = 0; i < rowLevels.length; i++) {
+            for (let j = 0; j < colLevels.length; j++) {
+                if (expected[i][j] > 0) {
+                    chi2 += Math.pow(observed[i][j] - expected[i][j], 2) / expected[i][j];
+                }
+            }
+        }
+
+        const df = (rowLevels.length - 1) * (colLevels.length - 1);
+        const p = df > 0 ? 1 - jStat.chisquare.cdf(chi2, df) : 1;
+        const minDim = Math.min(rowLevels.length, colLevels.length) - 1;
+        const cramersV = minDim > 0 ? Math.sqrt(chi2 / (total * minDim)) : null;
+        const lowExpectedCells = expected.flat().filter(e => e < 5).length;
+        const totalCells = rowLevels.length * colLevels.length;
+
+        return { chi2, df, p, observed, expected, rowLevels, colLevels, rowTotals, colTotals, total, cramersV, lowExpectedCells, totalCells };
+    }
+
+    function fisherExact2x2(observed) {
+        const a = observed[0][0], b = observed[0][1];
+        const c = observed[1][0], d = observed[1][1];
+        const n = a + b + c + d;
+        const r1 = a + b, r2 = c + d, c1 = a + c, c2 = b + d;
+        function logFact(k) { return jStat.gammaln(k + 1); }
+        function logProb(av) {
+            const bv = r1 - av, cv = c1 - av, dv = c2 - bv;
+            if (av < 0 || bv < 0 || cv < 0 || dv < 0) return -Infinity;
+            return logFact(r1) + logFact(r2) + logFact(c1) + logFact(c2) - logFact(n) - logFact(av) - logFact(bv) - logFact(cv) - logFact(dv);
+        }
+        const observedLogP = logProb(a);
+        const aMin = Math.max(0, r1 + c1 - n);
+        const aMax = Math.min(r1, c1);
+        let pSum = 0;
+        for (let i = aMin; i <= aMax; i++) {
+            const lp = logProb(i);
+            if (lp <= observedLogP + 1e-10) pSum += Math.exp(lp);
+        }
+        const oddsRatio = (b === 0 || c === 0) ? Infinity : (a * d) / (b * c);
+        return { p: Math.min(1, pSum), oddsRatio };
+    }
+
+    function spearmanCorrelation(x, y) {
+        function rank(arr) {
+            const indexed = arr.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v);
+            const ranks = new Array(arr.length);
+            let i = 0;
+            while (i < indexed.length) {
+                let j = i;
+                while (j + 1 < indexed.length && indexed[j + 1].v === indexed[i].v) j++;
+                const avg = (i + j) / 2 + 1; // 1-indexed average rank
+                for (let k = i; k <= j; k++) ranks[indexed[k].i] = avg;
+                i = j + 1;
+            }
+            return ranks;
+        }
+        const rx = rank(x), ry = rank(y);
+        const rho = jStat.corrcoeff(rx, ry);
+        const n = x.length;
+        const df = n - 2;
+        const t = rho * Math.sqrt(df) / Math.sqrt(1 - rho * rho);
+        const p = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+        return { rho, n, df, t, p };
+    }
+
+    function multipleRegression(X, y) {
+        // X: array of arrays (rows of predictors, no intercept column)
+        // y: array of outcomes
+        const n = y.length;
+        const k = X[0].length;
+        // Build design matrix with intercept column
+        const design = X.map(row => [1, ...row]);
+        // Solve beta = (X'X)^-1 X'y
+        const Xt = jStat.transpose(design);
+        const XtX = jStat.multiply(Xt, design);
+        const XtXinv = jStat.inv(XtX);
+        const Xty = jStat.multiply(Xt, y.map(v => [v]));
+        const betaMat = jStat.multiply(XtXinv, Xty);
+        const beta = betaMat.map(row => row[0]);
+        // Predicted values + residuals
+        const yHat = design.map(row => row.reduce((s, v, i) => s + v * beta[i], 0));
+        const residuals = y.map((v, i) => v - yHat[i]);
+        const meanY = jStat.mean(y);
+        const ssTotal = y.reduce((s, v) => s + (v - meanY) ** 2, 0);
+        const ssResidual = residuals.reduce((s, r) => s + r * r, 0);
+        const ssRegression = ssTotal - ssResidual;
+        const dfRegression = k;
+        const dfResidual = n - k - 1;
+        const r2 = 1 - ssResidual / ssTotal;
+        const adjR2 = 1 - (1 - r2) * (n - 1) / dfResidual;
+        const msResidual = ssResidual / dfResidual;
+        const F = (ssRegression / dfRegression) / msResidual;
+        const pF = 1 - jStat.centralF.cdf(F, dfRegression, dfResidual);
+        const see = Math.sqrt(msResidual);
+        // SE for each coefficient: sqrt(MSE * diag((X'X)^-1))
+        const coefs = beta.map((b, i) => {
+            const seB = Math.sqrt(msResidual * XtXinv[i][i]);
+            const tB = b / seB;
+            const pB = 2 * (1 - jStat.studentt.cdf(Math.abs(tB), dfResidual));
+            return { b, se: seB, t: tB, p: pB };
+        });
+        return { coefs, r2, adjR2, F, dfRegression, dfResidual, pF, see, n };
+    }
+
+    function simpleLinearRegression(x, y) {
+        const n = x.length;
+        const meanX = jStat.mean(x);
+        const meanY = jStat.mean(y);
+        const sdX = jStat.stdev(x, true);
+        const sdY = jStat.stdev(y, true);
+        const r = jStat.corrcoeff(x, y);
+
+        const slope = r * (sdY / sdX);
+        const intercept = meanY - slope * meanX;
+        const r2 = r * r;
+
+        const ssTotal = (n - 1) * sdY * sdY;
+        const ssRegression = ssTotal * r2;
+        const ssResidual = ssTotal - ssRegression;
+        const dfRegression = 1;
+        const dfResidual = n - 2;
+        const msResidual = ssResidual / dfResidual;
+
+        const F = (ssRegression / dfRegression) / msResidual;
+        const pF = 1 - jStat.centralF.cdf(F, dfRegression, dfResidual);
+
+        const seSlope = Math.sqrt(msResidual / ((n - 1) * sdX * sdX));
+        const tSlope = slope / seSlope;
+        const pSlope = 2 * (1 - jStat.studentt.cdf(Math.abs(tSlope), dfResidual));
+        const see = Math.sqrt(msResidual);
+        const adjR2 = 1 - (1 - r2) * (n - 1) / (n - 2);
+
+        return { slope, intercept, r, r2, adjR2, n, F, dfRegression, dfResidual, pF, seSlope, tSlope, pSlope, see, meanX, meanY };
+    }
+
+    // ---------- Run handlers ----------
+    document.getElementById('run-descriptives').addEventListener('click', runDescriptives);
+    document.getElementById('run-ttest').addEventListener('click', runTTest);
+    document.getElementById('run-correlation').addEventListener('click', runCorrelation);
+    document.getElementById('run-anova').addEventListener('click', runANOVA);
+    document.getElementById('run-chisquare').addEventListener('click', runChiSquare);
+    document.getElementById('run-regression').addEventListener('click', runRegression);
+    document.getElementById('run-multireg').addEventListener('click', runMultiReg);
+
+    function runDescriptives() {
+        let html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>Descriptive Statistics</h3>`;
+
+        const quantCols = state.columns.filter(c => c.type === 'quant');
+        if (quantCols.length > 0) {
+            html += `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Quantitative columns</h4>
+                <table class="stats-table"><thead><tr>
+                    <th>Variable</th><th class="num">N</th><th class="num">Missing</th>
+                    <th class="num">Mean</th><th class="num">SD</th><th class="num">Median</th>
+                    <th class="num">Min</th><th class="num">Max</th>
+                </tr></thead><tbody>`;
+            quantCols.forEach(c => {
+                const d = descriptiveQuant(c.quantValues);
+                html += `<tr>
+                    <td><strong>${escapeHtml(c.name)}</strong></td>
+                    <td class="num">${d.n}</td>
+                    <td class="num">${c.nMissing}</td>
+                    <td class="num">${fmt(d.mean)}</td>
+                    <td class="num">${fmt(d.sd)}</td>
+                    <td class="num">${fmt(d.median)}</td>
+                    <td class="num">${fmt(d.min)}</td>
+                    <td class="num">${fmt(d.max)}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            html += '<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Distributions</h4><div class="chart-grid">';
+            quantCols.forEach((c, i) => {
+                html += `<div class="chart-tile"><div class="tile-label">${escapeHtml(c.name)}</div><canvas id="desc-hist-${i}"></canvas></div>`;
+            });
+            html += '</div>';
+        }
+
+        const categCols = state.columns.filter(c => c.type === 'categ');
+        if (categCols.length > 0) {
+            html += `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Categorical columns</h4>`;
+            categCols.forEach((c, i) => {
+                const freq = frequencyTable(c.categValues);
+                const top = freq.slice(0, 10);
+                html += `<div style="margin-bottom:16px;">
+                    <div style="color:#ffffff;font-weight:600;margin-bottom:6px;">${escapeHtml(c.name)} <span style="color:#7f8c8d;font-weight:400;font-size:13px;">&middot; ${freq.length} unique levels &middot; ${c.nMissing} missing</span></div>
+                    <table class="stats-table"><thead><tr>
+                        <th>Level</th><th class="num">Count</th><th class="num">%</th>
+                    </tr></thead><tbody>`;
+                top.forEach(f => {
+                    html += `<tr><td>${escapeHtml(f.value)}</td><td class="num">${f.count}</td><td class="num">${f.pct.toFixed(1)}%</td></tr>`;
+                });
+                if (freq.length > 10) {
+                    html += `<tr><td colspan="3" style="color:#7f8c8d;font-style:italic;">&hellip;and ${freq.length - 10} more levels</td></tr>`;
+                }
+                html += `</tbody></table>
+                    <div class="result-chart-wrap" style="margin-top:8px;"><canvas id="desc-bar-${i}"></canvas></div>
+                </div>`;
+            });
+        }
+
+        if (quantCols.length === 0 && categCols.length === 0) {
+            html += '<p style="color:#b0b8c0;">No columns to summarize.</p>';
+        }
+
+        html += '</div>';
+        showResults(html);
+        // Draw histograms for quant cols
+        quantCols.forEach((c, i) => {
+            drawHistogram(document.getElementById('desc-hist-' + i), c.quantValues, { height: 200, xLabel: c.name });
+        });
+        // Draw bar charts for categ cols (top 10 levels only)
+        categCols.forEach((c, i) => {
+            const freq = frequencyTable(c.categValues).slice(0, 10);
+            drawCategBars(
+                document.getElementById('desc-bar-' + i),
+                freq.map(f => f.value),
+                freq.map(f => f.count),
+                { height: 220 }
+            );
+        });
+    }
+
+    function runTTest() {
+        const errEl = document.getElementById('ttest-error');
+        errEl.textContent = '';
+        const dvName = document.getElementById('ttest-dv').value;
+        const ivName = document.getElementById('ttest-iv').value;
+        if (!dvName || !ivName) {
+            errEl.textContent = 'Please pick both a DV and grouping variable.';
+            return;
+        }
+        const dv = getColumn(dvName);
+        const iv = getColumn(ivName);
+
+        // Pair up rows where both DV and IV are non-missing
+        const pairs = [];
+        state.rows.forEach(r => {
+            const dvRaw = r[dvName];
+            const ivRaw = r[ivName];
+            if (dvRaw === null || dvRaw === undefined || String(dvRaw).trim() === '') return;
+            if (ivRaw === null || ivRaw === undefined || String(ivRaw).trim() === '') return;
+            const num = parseFloat(dvRaw);
+            if (isNaN(num)) return;
+            pairs.push({ dv: num, iv: String(ivRaw) });
+        });
+
+        const levels = [...new Set(pairs.map(p => p.iv))];
+        if (levels.length !== 2) {
+            errEl.textContent = `Independent t-test requires exactly 2 groups, but "${ivName}" has ${levels.length}. Try chi-square or ANOVA instead (coming in a later phase).`;
+            return;
+        }
+        const g1 = pairs.filter(p => p.iv === levels[0]).map(p => p.dv);
+        const g2 = pairs.filter(p => p.iv === levels[1]).map(p => p.dv);
+        if (g1.length < 2 || g2.length < 2) {
+            errEl.textContent = `Each group needs at least 2 observations. Got ${g1.length} and ${g2.length}.`;
+            return;
+        }
+
+        const res = welchTTest(g1, g2);
+        const sig = res.p < 0.05;
+        const dMag = Math.abs(res.d);
+        const dLabel = dMag < 0.2 ? 'negligible' : dMag < 0.5 ? 'small' : dMag < 0.8 ? 'medium' : 'large';
+        const direction = res.m1 > res.m2 ? 'higher' : 'lower';
+
+        const html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>Independent t-Test (Welch)</h3>
+            <p style="color:#b0b8c0;margin-bottom:16px;">Comparing <strong style="color:#fff;">${escapeHtml(dvName)}</strong> between groups of <strong style="color:#fff;">${escapeHtml(ivName)}</strong>.</p>
+
+            <div class="result-chart-wrap"><h4>Distribution by group</h4><canvas id="ttest-chart"></canvas></div>
+
+            <table class="stats-table"><thead><tr>
+                <th>Group</th><th class="num">N</th><th class="num">Mean</th><th class="num">SD</th>
+            </tr></thead><tbody>
+                <tr><td><strong>${escapeHtml(levels[0])}</strong></td><td class="num">${res.n1}</td><td class="num">${fmt(res.m1)}</td><td class="num">${fmt(res.sd1)}</td></tr>
+                <tr><td><strong>${escapeHtml(levels[1])}</strong></td><td class="num">${res.n2}</td><td class="num">${fmt(res.m2)}</td><td class="num">${fmt(res.sd2)}</td></tr>
+            </tbody></table>
+
+            <table class="stats-table" style="margin-top:16px;"><thead><tr>
+                <th>Statistic</th><th class="num">Value</th>
+            </tr></thead><tbody>
+                <tr><td>t</td><td class="num">${fmt(res.t)}</td></tr>
+                <tr><td>df (Welch-Satterthwaite)</td><td class="num">${fmt(res.df, 2)}</td></tr>
+                <tr><td>p-value (two-tailed)</td><td class="num">${fmtP(res.p)}</td></tr>
+                <tr><td>Cohen's d (effect size)</td><td class="num">${fmt(res.d)}</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The mean ${escapeHtml(dvName)} for <strong>${escapeHtml(levels[0])}</strong> (M=${fmt(res.m1)}, SD=${fmt(res.sd1)}, n=${res.n1}) is ${direction} than for <strong>${escapeHtml(levels[1])}</strong> (M=${fmt(res.m2)}, SD=${fmt(res.sd2)}, n=${res.n2}). The difference is <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at α=.05, t(${fmt(res.df, 2)})=${fmt(res.t)}, p=${fmtP(res.p)}. Effect size is ${dLabel} (Cohen's d = ${fmt(res.d)}).
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Welch's t-test does not assume equal variances and is the safer default. Pearl drops rows with missing values on either variable.</p>
+            ${apaButton('ttest', res, { dvName, levels })}
+        </div>`;
+        showResults(html);
+        drawBoxPlot(document.getElementById('ttest-chart'), [
+            { name: levels[0], values: g1 },
+            { name: levels[1], values: g2 }
+        ], { yLabel: dvName });
+    }
+
+    function runCorrelation() {
+        const errEl = document.getElementById('correlation-error');
+        errEl.textContent = '';
+        const xName = document.getElementById('corr-x').value;
+        const yName = document.getElementById('corr-y').value;
+        const method = document.getElementById('corr-method').value;
+        if (!xName || !yName) {
+            errEl.textContent = 'Please pick two quantitative variables.';
+            return;
+        }
+        if (xName === yName) {
+            errEl.textContent = 'Pick two different variables.';
+            return;
+        }
+
+        const xs = [], ys = [];
+        state.rows.forEach(r => {
+            const xRaw = r[xName], yRaw = r[yName];
+            const xn = parseFloat(xRaw), yn = parseFloat(yRaw);
+            if (!isNaN(xn) && !isNaN(yn)) { xs.push(xn); ys.push(yn); }
+        });
+        if (xs.length < 3) {
+            errEl.textContent = `Need at least 3 paired observations. Got ${xs.length}.`;
+            return;
+        }
+
+        if (method === 'spearman') return runSpearman(xs, ys, xName, yName);
+
+        const res = pearsonCorrelation(xs, ys);
+        const sig = res.p < 0.05;
+        const absR = Math.abs(res.r);
+        const strength = absR < 0.1 ? 'negligible' : absR < 0.3 ? 'weak' : absR < 0.5 ? 'moderate' : absR < 0.7 ? 'strong' : 'very strong';
+        const direction = res.r > 0 ? 'positive' : 'negative';
+
+        const html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>Pearson Correlation</h3>
+            <p style="color:#b0b8c0;margin-bottom:16px;">Linear relationship between <strong style="color:#fff;">${escapeHtml(xName)}</strong> and <strong style="color:#fff;">${escapeHtml(yName)}</strong>.</p>
+
+            <div class="result-chart-wrap"><h4>Scatter plot</h4><canvas id="corr-chart"></canvas></div>
+
+            <table class="stats-table"><thead><tr>
+                <th>Statistic</th><th class="num">Value</th>
+            </tr></thead><tbody>
+                <tr><td>Pearson's r</td><td class="num">${fmt(res.r)}</td></tr>
+                <tr><td>r² (variance explained)</td><td class="num">${(res.r * res.r * 100).toFixed(1)}%</td></tr>
+                <tr><td>N (paired)</td><td class="num">${res.n}</td></tr>
+                <tr><td>df</td><td class="num">${res.df}</td></tr>
+                <tr><td>t</td><td class="num">${fmt(res.t)}</td></tr>
+                <tr><td>p-value (two-tailed)</td><td class="num">${fmtP(res.p)}</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> There is a <strong>${strength} ${direction}</strong> linear relationship between ${escapeHtml(xName)} and ${escapeHtml(yName)}, r(${res.df}) = ${fmt(res.r)}, p = ${fmtP(res.p)}. ${sig ? '<span class="sig-yes">This correlation is statistically significant</span> at α=.05.' : '<span class="sig-no">This correlation is not statistically significant</span> at α=.05.'} The two variables share about ${(res.r * res.r * 100).toFixed(1)}% of their variance.
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearson's r assumes a linear relationship and roughly normal distributions. For small samples or skewed data, run Spearman's ρ from the toggle above. Pearl drops rows with missing values on either variable.</p>
+            ${apaButton('correlation', res, { xName, yName })}
+        </div>`;
+        showResults(html);
+        drawScatter(document.getElementById('corr-chart'), xs, ys, { xLabel: xName, yLabel: yName });
+    }
+
+    function runSpearman(xs, ys, xName, yName) {
+        const res = spearmanCorrelation(xs, ys);
+        const sig = res.p < 0.05;
+        const absR = Math.abs(res.rho);
+        const strength = absR < 0.1 ? 'negligible' : absR < 0.3 ? 'weak' : absR < 0.5 ? 'moderate' : absR < 0.7 ? 'strong' : 'very strong';
+        const direction = res.rho > 0 ? 'positive' : 'negative';
+
+        const html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>Spearman Rank Correlation</h3>
+            <p style="color:#b0b8c0;margin-bottom:16px;">Monotonic relationship between <strong style="color:#fff;">${escapeHtml(xName)}</strong> and <strong style="color:#fff;">${escapeHtml(yName)}</strong>.</p>
+
+            <div class="result-chart-wrap"><h4>Scatter plot</h4><canvas id="spearman-chart"></canvas></div>
+
+            <table class="stats-table"><thead><tr><th>Statistic</th><th class="num">Value</th></tr></thead><tbody>
+                <tr><td>Spearman's &rho;</td><td class="num">${fmt(res.rho)}</td></tr>
+                <tr><td>N (paired)</td><td class="num">${res.n}</td></tr>
+                <tr><td>df</td><td class="num">${res.df}</td></tr>
+                <tr><td>t</td><td class="num">${fmt(res.t)}</td></tr>
+                <tr><td>p-value (two-tailed)</td><td class="num">${fmtP(res.p)}</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> There is a <strong>${strength} ${direction}</strong> monotonic relationship between ${escapeHtml(xName)} and ${escapeHtml(yName)}, &rho;(${res.df}) = ${fmt(res.rho)}, p = ${fmtP(res.p)}. <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'Statistically significant' : 'Not statistically significant'}</span> at &alpha;=.05.
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Spearman's &rho; uses ranks instead of raw values, so it doesn't assume linearity or normality. Use it when data is ordinal, skewed, or has outliers.</p>
+            ${apaButton('spearman', res, { xName, yName })}
+        </div>`;
+        showResults(html);
+        drawScatter(document.getElementById('spearman-chart'), xs, ys, { xLabel: xName, yLabel: yName });
+    }
+
+    function runANOVA() {
+        const errEl = document.getElementById('anova-error');
+        errEl.textContent = '';
+        const dvName = document.getElementById('anova-dv').value;
+        const ivName = document.getElementById('anova-iv').value;
+        if (!dvName || !ivName) {
+            errEl.textContent = 'Please pick both an outcome and a grouping variable.';
+            return;
+        }
+
+        const pairs = [];
+        state.rows.forEach(r => {
+            const dvRaw = r[dvName], ivRaw = r[ivName];
+            if (dvRaw === null || dvRaw === undefined || String(dvRaw).trim() === '') return;
+            if (ivRaw === null || ivRaw === undefined || String(ivRaw).trim() === '') return;
+            const num = parseFloat(dvRaw);
+            if (isNaN(num)) return;
+            pairs.push({ dv: num, iv: String(ivRaw) });
+        });
+
+        const levels = [...new Set(pairs.map(p => p.iv))].sort();
+        if (levels.length < 2) {
+            errEl.textContent = `Need at least 2 groups in "${ivName}". Got ${levels.length}.`;
+            return;
+        }
+        const groups = levels.map(l => ({ name: l, values: pairs.filter(p => p.iv === l).map(p => p.dv) }));
+        if (groups.some(g => g.values.length < 2)) {
+            errEl.textContent = 'Each group needs at least 2 observations.';
+            return;
+        }
+
+        const res = oneWayANOVA(groups);
+        const sig = res.p < 0.05;
+        const effectMag = res.eta2 < 0.01 ? 'negligible' : res.eta2 < 0.06 ? 'small' : res.eta2 < 0.14 ? 'medium' : 'large';
+
+        const groupRows = res.groupStats.map(g =>
+            `<tr><td><strong>${escapeHtml(g.name)}</strong></td><td class="num">${g.n}</td><td class="num">${fmt(g.mean)}</td><td class="num">${fmt(g.sd)}</td></tr>`
+        ).join('');
+
+        const html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>One-Way ANOVA</h3>
+            <p style="color:#b0b8c0;margin-bottom:16px;">Comparing <strong style="color:#fff;">${escapeHtml(dvName)}</strong> across ${res.k} groups of <strong style="color:#fff;">${escapeHtml(ivName)}</strong>.</p>
+
+            <div class="result-chart-wrap"><h4>Distribution by group</h4><canvas id="anova-chart"></canvas></div>
+
+            <table class="stats-table"><thead><tr>
+                <th>Group</th><th class="num">N</th><th class="num">Mean</th><th class="num">SD</th>
+            </tr></thead><tbody>${groupRows}</tbody></table>
+
+            <table class="stats-table" style="margin-top:16px;"><thead><tr>
+                <th>Source</th><th class="num">SS</th><th class="num">df</th><th class="num">MS</th><th class="num">F</th><th class="num">p</th>
+            </tr></thead><tbody>
+                <tr><td>Between groups</td><td class="num">${fmt(res.ssBetween)}</td><td class="num">${res.dfBetween}</td><td class="num">${fmt(res.msBetween)}</td><td class="num">${fmt(res.F)}</td><td class="num">${fmtP(res.p)}</td></tr>
+                <tr><td>Within groups</td><td class="num">${fmt(res.ssWithin)}</td><td class="num">${res.dfWithin}</td><td class="num">${fmt(res.msWithin)}</td><td></td><td></td></tr>
+                <tr><td>Total</td><td class="num">${fmt(res.ssBetween + res.ssWithin)}</td><td class="num">${res.dfBetween + res.dfWithin}</td><td></td><td></td><td></td></tr>
+            </tbody></table>
+
+            <table class="stats-table" style="margin-top:16px;"><thead><tr>
+                <th>Effect Size</th><th class="num">Value</th>
+            </tr></thead><tbody>
+                <tr><td>Eta-squared (&eta;&sup2;)</td><td class="num">${fmt(res.eta2)}</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> A one-way ANOVA tested whether mean ${escapeHtml(dvName)} differs across the ${res.k} levels of ${escapeHtml(ivName)}. The omnibus test was <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, F(${res.dfBetween}, ${res.dfWithin}) = ${fmt(res.F)}, p = ${fmtP(res.p)}. Effect size is ${effectMag} (&eta;&sup2; = ${fmt(res.eta2)} &mdash; about ${(res.eta2 * 100).toFixed(1)}% of the variance in ${escapeHtml(dvName)} is explained by ${escapeHtml(ivName)}). ${sig ? 'Because the omnibus test is significant, see the Tukey HSD pairwise comparisons below for which specific groups differ.' : ''}
+            </div>
+
+            ${sig ? renderTukeyHSD(groups, res.msWithin, res.dfWithin) : ''}
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">One-way ANOVA assumes roughly normal distributions within each group and approximately equal variances across groups. Pearl drops rows with missing values on either variable.</p>
+            ${apaButton('anova', res, { dvName, ivName })}
+        </div>`;
+        showResults(html);
+        drawBoxPlot(document.getElementById('anova-chart'), groups, { yLabel: dvName });
+    }
+
+    function runChiSquare() {
+        const errEl = document.getElementById('chisquare-error');
+        errEl.textContent = '';
+        const var1 = document.getElementById('chi-var1').value;
+        const var2 = document.getElementById('chi-var2').value;
+        if (!var1 || !var2) {
+            errEl.textContent = 'Please pick two categorical variables.';
+            return;
+        }
+        if (var1 === var2) {
+            errEl.textContent = 'Pick two different variables.';
+            return;
+        }
+
+        const pairs = [];
+        state.rows.forEach(r => {
+            const v1 = r[var1], v2 = r[var2];
+            if (v1 === null || v1 === undefined || String(v1).trim() === '') return;
+            if (v2 === null || v2 === undefined || String(v2).trim() === '') return;
+            pairs.push({ row: String(v1), col: String(v2) });
+        });
+        if (pairs.length < 5) {
+            errEl.textContent = `Not enough complete observations: ${pairs.length}.`;
+            return;
+        }
+
+        const res = chiSquareIndependence(pairs);
+        if (res.df === 0) {
+            errEl.textContent = 'Both variables need at least 2 levels each. One of them is constant.';
+            return;
+        }
+        const sig = res.p < 0.05;
+        const v = res.cramersV;
+        const strength = v === null ? 'n/a' : v < 0.1 ? 'negligible' : v < 0.3 ? 'small' : v < 0.5 ? 'moderate' : 'strong';
+
+        const obsHeader = '<th></th>' + res.colLevels.map(c => `<th class="num">${escapeHtml(c)}</th>`).join('') + '<th class="num">Total</th>';
+        const obsRows = res.rowLevels.map((rl, i) =>
+            `<tr><td><strong>${escapeHtml(rl)}</strong></td>` +
+            res.observed[i].map((o, j) => `<td class="num">${o}<br><span style="color:#7f8c8d;font-size:11px;">(${fmt(res.expected[i][j], 1)})</span></td>`).join('') +
+            `<td class="num"><strong>${res.rowTotals[i]}</strong></td></tr>`
+        ).join('');
+        const totalRow = `<tr><td><strong>Total</strong></td>` + res.colTotals.map(c => `<td class="num"><strong>${c}</strong></td>`).join('') + `<td class="num"><strong>${res.total}</strong></td></tr>`;
+
+        // Optional Fisher's exact for 2x2
+        let fisherBlock = '';
+        let fisherRes = null;
+        if (res.rowLevels.length === 2 && res.colLevels.length === 2) {
+            fisherRes = fisherExact2x2(res.observed);
+            const fSig = fisherRes.p < 0.05;
+            fisherBlock = `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Fisher's Exact Test (2&times;2)</h4>
+                <table class="stats-table"><thead><tr><th>Statistic</th><th class="num">Value</th></tr></thead><tbody>
+                    <tr><td>Two-tailed p</td><td class="num">${fmtP(fisherRes.p)}</td></tr>
+                    <tr><td>Odds ratio</td><td class="num">${isFinite(fisherRes.oddsRatio) ? fmt(fisherRes.oddsRatio) : '&infin;'}</td></tr>
+                </tbody></table>
+                <p style="color:#b0b8c0;font-size:13px;margin-top:8px;">Fisher's exact is the recommended test for 2&times;2 tables, especially when expected counts are small. Result: <span class="${fSig ? 'sig-yes' : 'sig-no'}">${fSig ? 'significant' : 'not significant'}</span> at &alpha;=.05.</p>`;
+        }
+
+        const html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>Chi-Square Test of Independence</h3>
+            <p style="color:#b0b8c0;margin-bottom:16px;">Testing association between <strong style="color:#fff;">${escapeHtml(var1)}</strong> (rows) and <strong style="color:#fff;">${escapeHtml(var2)}</strong> (columns). Observed counts shown with expected counts in parentheses.</p>
+
+            <div class="result-chart-wrap"><h4>Stacked counts by ${escapeHtml(var1)}</h4><canvas id="chi-chart"></canvas></div>
+
+            <table class="stats-table"><thead><tr>${obsHeader}</tr></thead><tbody>${obsRows}${totalRow}</tbody></table>
+
+            <table class="stats-table" style="margin-top:16px;"><thead><tr>
+                <th>Statistic</th><th class="num">Value</th>
+            </tr></thead><tbody>
+                <tr><td>Chi-square (&chi;&sup2;)</td><td class="num">${fmt(res.chi2)}</td></tr>
+                <tr><td>df</td><td class="num">${res.df}</td></tr>
+                <tr><td>p-value</td><td class="num">${fmtP(res.p)}</td></tr>
+                <tr><td>N</td><td class="num">${res.total}</td></tr>
+                ${v !== null ? `<tr><td>Cramer's V (effect size)</td><td class="num">${fmt(v)}</td></tr>` : ''}
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The association between ${escapeHtml(var1)} and ${escapeHtml(var2)} is <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, &chi;&sup2;(${res.df}, N=${res.total}) = ${fmt(res.chi2)}, p = ${fmtP(res.p)}. ${v !== null ? `The strength of association is ${strength} (Cramer's V = ${fmt(v)}).` : ''} ${sig ? 'Examine the observed-vs-expected counts in the table above to see which cells contribute the most to the association.' : ''}
+            </div>
+
+            ${fisherBlock}
+            ${res.lowExpectedCells > 0 && !fisherRes ? `<p style="color:#f39c12;font-size:13px;margin-top:12px;"><strong>&#9888; Assumption note:</strong> ${res.lowExpectedCells} of ${res.totalCells} cells have expected counts below 5. Chi-square may be unreliable; consider collapsing rare categories or using a 2&times;2 split for Fisher's exact.</p>` : ''}
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Chi-square assumes independent observations and expected cell counts &ge; 5 in at least 80% of cells. Pearl drops rows with missing values on either variable.</p>
+            ${apaButton(fisherRes ? 'fisher' : 'chisquare', fisherRes ? { ...fisherRes, total: res.total } : res, { var1, var2 })}
+        </div>`;
+        showResults(html);
+        drawStackedBars(document.getElementById('chi-chart'), res.rowLevels, res.colLevels, res.observed, { yLabel: 'Count' });
+    }
+
+    function runRegression() {
+        const errEl = document.getElementById('regression-error');
+        errEl.textContent = '';
+        const xName = document.getElementById('reg-x').value;
+        const yName = document.getElementById('reg-y').value;
+        if (!xName || !yName) {
+            errEl.textContent = 'Please pick a predictor and outcome.';
+            return;
+        }
+        if (xName === yName) {
+            errEl.textContent = 'Predictor and outcome must differ.';
+            return;
+        }
+
+        const xs = [], ys = [];
+        state.rows.forEach(r => {
+            const xn = parseFloat(r[xName]), yn = parseFloat(r[yName]);
+            if (!isNaN(xn) && !isNaN(yn)) { xs.push(xn); ys.push(yn); }
+        });
+        if (xs.length < 3) {
+            errEl.textContent = `Need at least 3 paired observations. Got ${xs.length}.`;
+            return;
+        }
+
+        const res = simpleLinearRegression(xs, ys);
+        const sig = res.pSlope < 0.05;
+        const direction = res.slope > 0 ? 'increases' : 'decreases';
+        const sign = res.intercept >= 0 ? '+' : '&minus;';
+
+        const html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>Simple Linear Regression</h3>
+            <p style="color:#b0b8c0;margin-bottom:16px;">Predicting <strong style="color:#fff;">${escapeHtml(yName)}</strong> from <strong style="color:#fff;">${escapeHtml(xName)}</strong>.</p>
+
+            <div class="result-chart-wrap"><h4>Scatter with regression line</h4><canvas id="reg-chart"></canvas></div>
+
+            <div class="interpretation" style="font-family:'Playfair Display',Georgia,serif;font-size:18px;text-align:center;">
+                ${escapeHtml(yName)} = ${fmt(res.slope)} &times; ${escapeHtml(xName)} ${sign} ${fmt(Math.abs(res.intercept))}
+            </div>
+
+            <table class="stats-table"><thead><tr>
+                <th>Coefficient</th><th class="num">Estimate</th><th class="num">SE</th><th class="num">t</th><th class="num">p</th>
+            </tr></thead><tbody>
+                <tr><td>Intercept</td><td class="num">${fmt(res.intercept)}</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+                <tr><td>${escapeHtml(xName)} (slope)</td><td class="num">${fmt(res.slope)}</td><td class="num">${fmt(res.seSlope)}</td><td class="num">${fmt(res.tSlope)}</td><td class="num">${fmtP(res.pSlope)}</td></tr>
+            </tbody></table>
+
+            <table class="stats-table" style="margin-top:16px;"><thead><tr>
+                <th>Model Fit</th><th class="num">Value</th>
+            </tr></thead><tbody>
+                <tr><td>R&sup2;</td><td class="num">${fmt(res.r2)}</td></tr>
+                <tr><td>Adjusted R&sup2;</td><td class="num">${fmt(res.adjR2)}</td></tr>
+                <tr><td>F(${res.dfRegression}, ${res.dfResidual})</td><td class="num">${fmt(res.F)}</td></tr>
+                <tr><td>p (model)</td><td class="num">${fmtP(res.pF)}</td></tr>
+                <tr><td>Standard error of estimate</td><td class="num">${fmt(res.see)}</td></tr>
+                <tr><td>N</td><td class="num">${res.n}</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> For every one-unit increase in ${escapeHtml(xName)}, ${escapeHtml(yName)} ${direction} by ${fmt(Math.abs(res.slope))} units, on average. The slope is <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, t(${res.dfResidual}) = ${fmt(res.tSlope)}, p = ${fmtP(res.pSlope)}. The model explains ${(res.r2 * 100).toFixed(1)}% of the variance in ${escapeHtml(yName)} (R&sup2; = ${fmt(res.r2)}).
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Simple linear regression assumes a linear relationship, independent observations, normally distributed residuals, and constant variance across X (homoscedasticity). Pearl drops rows with missing values on either variable.</p>
+            ${apaButton('regression', res, { xName, yName })}
+        </div>`;
+        showResults(html);
+        drawScatter(document.getElementById('reg-chart'), xs, ys, {
+            xLabel: xName, yLabel: yName,
+            line: { slope: res.slope, intercept: res.intercept }
+        });
+    }
+
+    function runMultiReg() {
+        const errEl = document.getElementById('multireg-error');
+        errEl.textContent = '';
+        const yName = document.getElementById('multireg-y').value;
+        const predBoxes = document.querySelectorAll('#multireg-predictors input:checked');
+        const xNames = Array.from(predBoxes).map(b => b.value);
+        if (!yName) { errEl.textContent = 'Pick an outcome variable.'; return; }
+        if (xNames.length < 2) { errEl.textContent = 'Pick at least 2 predictors. (For 1 predictor, use Simple Linear Regression instead.)'; return; }
+        if (xNames.includes(yName)) { errEl.textContent = `"${yName}" is also a predictor &mdash; remove it from one or the other.`; return; }
+
+        const xRows = [], ys = [];
+        state.rows.forEach(r => {
+            const yn = parseFloat(r[yName]);
+            if (isNaN(yn)) return;
+            const row = xNames.map(n => parseFloat(r[n]));
+            if (row.some(v => isNaN(v))) return;
+            xRows.push(row);
+            ys.push(yn);
+        });
+        if (xRows.length < xNames.length + 2) {
+            errEl.textContent = `Need at least ${xNames.length + 2} complete rows. Got ${xRows.length}.`;
+            return;
+        }
+
+        let res;
+        try { res = multipleRegression(xRows, ys); }
+        catch (e) { errEl.textContent = 'Could not fit the model — predictors may be collinear or perfectly correlated.'; return; }
+
+        const sigModel = res.pF < 0.05;
+        const eqParts = [`${fmt(res.coefs[0].b)}`];
+        res.coefs.slice(1).forEach((c, i) => {
+            const sign = c.b >= 0 ? '+' : '&minus;';
+            eqParts.push(`${sign} ${fmt(Math.abs(c.b))} &times; ${escapeHtml(xNames[i])}`);
+        });
+
+        const coefRows = res.coefs.map((c, i) => {
+            const label = i === 0 ? 'Intercept' : escapeHtml(xNames[i - 1]);
+            const sigCoef = c.p < 0.05;
+            return `<tr><td><strong>${label}</strong></td>
+                <td class="num">${fmt(c.b)}</td>
+                <td class="num">${fmt(c.se)}</td>
+                <td class="num">${fmt(c.t)}</td>
+                <td class="num">${fmtP(c.p)}</td>
+                <td><span class="${sigCoef ? 'sig-yes' : 'sig-no'}">${sigCoef ? 'sig.' : 'ns'}</span></td></tr>`;
+        }).join('');
+
+        const html = `<div class="result-card">
+            <div class="result-label">Pearl's Output</div>
+            <h3>Multiple Linear Regression</h3>
+            <p style="color:#b0b8c0;margin-bottom:16px;">Predicting <strong style="color:#fff;">${escapeHtml(yName)}</strong> from <strong style="color:#fff;">${xNames.map(escapeHtml).join(', ')}</strong>.</p>
+
+            <div class="interpretation" style="font-family:'Playfair Display',Georgia,serif;font-size:16px;text-align:center;line-height:1.7;">
+                ${escapeHtml(yName)} = ${eqParts.join(' ')}
+            </div>
+
+            <table class="stats-table"><thead><tr>
+                <th>Coefficient</th><th class="num">B</th><th class="num">SE</th><th class="num">t</th><th class="num">p</th><th>Sig.</th>
+            </tr></thead><tbody>${coefRows}</tbody></table>
+
+            <table class="stats-table" style="margin-top:16px;"><thead><tr>
+                <th>Model Fit</th><th class="num">Value</th>
+            </tr></thead><tbody>
+                <tr><td>R&sup2;</td><td class="num">${fmt(res.r2)}</td></tr>
+                <tr><td>Adjusted R&sup2;</td><td class="num">${fmt(res.adjR2)}</td></tr>
+                <tr><td>F(${res.dfRegression}, ${res.dfResidual})</td><td class="num">${fmt(res.F)}</td></tr>
+                <tr><td>p (model)</td><td class="num">${fmtP(res.pF)}</td></tr>
+                <tr><td>Standard error of estimate</td><td class="num">${fmt(res.see)}</td></tr>
+                <tr><td>N</td><td class="num">${res.n}</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The overall model is <span class="${sigModel ? 'sig-yes' : 'sig-no'}">${sigModel ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, F(${res.dfRegression}, ${res.dfResidual}) = ${fmt(res.F)}, p = ${fmtP(res.pF)}, R&sup2; = ${fmt(res.r2)}. The predictors together explain ${(res.r2 * 100).toFixed(1)}% of the variance in ${escapeHtml(yName)}. Look at each predictor's row above &mdash; predictors flagged "sig." make a unique contribution after controlling for the others.
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Multiple regression assumes linearity, independence, normally distributed residuals, homoscedasticity, and no severe multicollinearity. Pearl drops rows with any missing predictor or outcome value.</p>
+            ${apaButton('multireg', res, { yName, xNames })}
+        </div>`;
+        showResults(html);
+    }
+
+    function showResults(html) {
+        const r = document.getElementById('results');
+        r.innerHTML = html;
+        r.classList.add('show');
+        r.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        wireApaButtons();
+    }
+
+    // ---------- Canvas chart helpers ----------
+    const ChartColors = {
+        bg: '#0d1117', grid: '#30363d', text: '#b0b8c0',
+        primary: '#c0392b', secondary: '#f39c12', accent: '#27ae60',
+        accent2: '#3498db', accent3: '#9b59b6'
+    };
+
+    function chartSetup(canvas, height, pad) {
+        if (!canvas) return null;
+        const dpr = window.devicePixelRatio || 1;
+        const cssW = canvas.parentElement.clientWidth - 24;
+        const cssH = height || 280;
+        canvas.style.width = cssW + 'px';
+        canvas.style.height = cssH + 'px';
+        canvas.width = cssW * dpr;
+        canvas.height = cssH * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.font = '11px Inter, sans-serif';
+        const padding = pad || { l: 50, r: 16, t: 14, b: 38 };
+        return {
+            ctx, w: cssW, h: cssH, pad: padding,
+            innerW: cssW - padding.l - padding.r,
+            innerH: cssH - padding.t - padding.b
+        };
+    }
+
+    function fmtAxis(n) {
+        if (n === 0) return '0';
+        const a = Math.abs(n);
+        if (a >= 1000) return Math.round(n).toLocaleString();
+        if (a >= 10) return n.toFixed(1);
+        if (a >= 1) return n.toFixed(2);
+        return n.toFixed(3);
+    }
+
+    function drawAxes(s, xMin, xMax, yMin, yMax, xLabel, yLabel, xCategorical) {
+        const { ctx, w, h, pad, innerW, innerH } = s;
+        ctx.strokeStyle = ChartColors.grid;
+        ctx.fillStyle = ChartColors.text;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad.l, pad.t);
+        ctx.lineTo(pad.l, h - pad.b);
+        ctx.lineTo(w - pad.r, h - pad.b);
+        ctx.stroke();
+        const xTicks = 5, yTicks = 5;
+        if (!xCategorical) {
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            for (let i = 0; i <= xTicks; i++) {
+                const x = pad.l + (innerW * i / xTicks);
+                const v = xMin + (xMax - xMin) * i / xTicks;
+                ctx.fillText(fmtAxis(v), x, h - pad.b + 6);
+                ctx.beginPath(); ctx.moveTo(x, h - pad.b); ctx.lineTo(x, h - pad.b + 4); ctx.stroke();
+            }
+        }
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        for (let i = 0; i <= yTicks; i++) {
+            const y = h - pad.b - (innerH * i / yTicks);
+            const v = yMin + (yMax - yMin) * i / yTicks;
+            ctx.fillText(fmtAxis(v), pad.l - 6, y);
+            ctx.beginPath(); ctx.moveTo(pad.l - 4, y); ctx.lineTo(pad.l, y); ctx.stroke();
+            // grid line
+            ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+            ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+            ctx.strokeStyle = ChartColors.grid;
+        }
+        if (xLabel) {
+            ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+            ctx.fillText(xLabel, pad.l + innerW / 2, h - 4);
+        }
+        if (yLabel) {
+            ctx.save();
+            ctx.translate(14, pad.t + innerH / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            ctx.fillText(yLabel, 0, 0);
+            ctx.restore();
+        }
+    }
+
+    function projectXY(s, x, y, xMin, xMax, yMin, yMax) {
+        const { pad, innerW, innerH, h } = s;
+        return {
+            px: pad.l + ((x - xMin) / (xMax - xMin || 1)) * innerW,
+            py: h - pad.b - ((y - yMin) / (yMax - yMin || 1)) * innerH
+        };
+    }
+
+    function drawHistogram(canvas, values, opts) {
+        opts = opts || {};
+        const s = chartSetup(canvas, opts.height);
+        if (!s) return;
+        const min = Math.min(...values), max = Math.max(...values);
+        const numBins = opts.bins || Math.max(5, Math.min(20, Math.ceil(Math.sqrt(values.length))));
+        const binW = (max - min) / numBins || 1;
+        const counts = new Array(numBins).fill(0);
+        values.forEach(v => {
+            let b = Math.floor((v - min) / binW);
+            if (b >= numBins) b = numBins - 1;
+            if (b < 0) b = 0;
+            counts[b]++;
+        });
+        const maxC = Math.max(...counts);
+        drawAxes(s, min, max, 0, maxC, opts.xLabel || '', 'Count');
+        const { ctx, pad, innerW, innerH, h } = s;
+        ctx.fillStyle = ChartColors.primary;
+        const barPx = innerW / numBins;
+        counts.forEach((c, i) => {
+            const x = pad.l + i * barPx;
+            const barH = (c / maxC) * innerH;
+            ctx.fillRect(x + 1, h - pad.b - barH, barPx - 2, barH);
+        });
+    }
+
+    function drawCategBars(canvas, labels, values, opts) {
+        opts = opts || {};
+        const s = chartSetup(canvas, opts.height, { l: 50, r: 16, t: 14, b: 60 });
+        if (!s) return;
+        const maxV = Math.max(...values);
+        drawAxes(s, 0, labels.length, 0, maxV, '', opts.yLabel || 'Count', true);
+        const { ctx, pad, innerW, innerH, h } = s;
+        const barW = innerW / labels.length;
+        ctx.fillStyle = ChartColors.primary;
+        values.forEach((v, i) => {
+            const x = pad.l + i * barW + barW * 0.15;
+            const barH = (v / maxV) * innerH;
+            ctx.fillRect(x, h - pad.b - barH, barW * 0.7, barH);
+        });
+        // x labels
+        ctx.fillStyle = ChartColors.text;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        labels.forEach((lab, i) => {
+            const x = pad.l + i * barW + barW / 2;
+            const text = String(lab).length > 12 ? String(lab).slice(0, 11) + '…' : String(lab);
+            ctx.save();
+            ctx.translate(x, h - pad.b + 6);
+            if (labels.length > 4) ctx.rotate(-Math.PI / 6);
+            ctx.fillText(text, 0, 0);
+            ctx.restore();
+        });
+    }
+
+    function drawBoxPlot(canvas, groups, opts) {
+        opts = opts || {};
+        const s = chartSetup(canvas, opts.height || 320, { l: 50, r: 16, t: 14, b: 60 });
+        if (!s) return;
+        const allV = groups.flatMap(g => g.values);
+        let yMin = Math.min(...allV), yMax = Math.max(...allV);
+        const yPad = (yMax - yMin) * 0.05;
+        yMin -= yPad; yMax += yPad;
+        drawAxes(s, 0, groups.length, yMin, yMax, '', opts.yLabel || 'Value', true);
+        const { ctx, pad, innerW, innerH, h } = s;
+        const slot = innerW / groups.length;
+        groups.forEach((g, i) => {
+            const sorted = [...g.values].sort((a, b) => a - b);
+            const q1 = quantile(sorted, 0.25);
+            const median = quantile(sorted, 0.5);
+            const q3 = quantile(sorted, 0.75);
+            const iqr = q3 - q1;
+            const lower = sorted.filter(v => v >= q1 - 1.5 * iqr);
+            const upper = sorted.filter(v => v <= q3 + 1.5 * iqr);
+            const whiskerLow = lower.length ? lower[0] : q1;
+            const whiskerHigh = upper.length ? upper[upper.length - 1] : q3;
+            const cx = pad.l + i * slot + slot / 2;
+            const boxW = Math.min(slot * 0.5, 60);
+            const yQ1 = projectXY(s, 0, q1, 0, 1, yMin, yMax).py;
+            const yQ3 = projectXY(s, 0, q3, 0, 1, yMin, yMax).py;
+            const yMed = projectXY(s, 0, median, 0, 1, yMin, yMax).py;
+            const yLow = projectXY(s, 0, whiskerLow, 0, 1, yMin, yMax).py;
+            const yHigh = projectXY(s, 0, whiskerHigh, 0, 1, yMin, yMax).py;
+            // box
+            ctx.fillStyle = 'rgba(192, 57, 43, 0.25)';
+            ctx.strokeStyle = ChartColors.primary;
+            ctx.lineWidth = 2;
+            ctx.fillRect(cx - boxW / 2, yQ3, boxW, yQ1 - yQ3);
+            ctx.strokeRect(cx - boxW / 2, yQ3, boxW, yQ1 - yQ3);
+            // median line
+            ctx.beginPath(); ctx.moveTo(cx - boxW / 2, yMed); ctx.lineTo(cx + boxW / 2, yMed); ctx.stroke();
+            // whiskers
+            ctx.beginPath();
+            ctx.moveTo(cx, yQ3); ctx.lineTo(cx, yHigh);
+            ctx.moveTo(cx, yQ1); ctx.lineTo(cx, yLow);
+            ctx.moveTo(cx - boxW / 4, yHigh); ctx.lineTo(cx + boxW / 4, yHigh);
+            ctx.moveTo(cx - boxW / 4, yLow); ctx.lineTo(cx + boxW / 4, yLow);
+            ctx.stroke();
+            // outliers
+            ctx.fillStyle = ChartColors.secondary;
+            sorted.forEach(v => {
+                if (v < q1 - 1.5 * iqr || v > q3 + 1.5 * iqr) {
+                    const py = projectXY(s, 0, v, 0, 1, yMin, yMax).py;
+                    ctx.beginPath(); ctx.arc(cx, py, 3, 0, Math.PI * 2); ctx.fill();
+                }
+            });
+            // group label
+            ctx.fillStyle = ChartColors.text;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            const text = String(g.name).length > 14 ? String(g.name).slice(0, 13) + '…' : String(g.name);
+            ctx.save();
+            ctx.translate(cx, h - pad.b + 6);
+            if (groups.length > 3) ctx.rotate(-Math.PI / 8);
+            ctx.fillText(text, 0, 0);
+            ctx.restore();
+        });
+    }
+
+    function quantile(sorted, p) {
+        const idx = (sorted.length - 1) * p;
+        const lo = Math.floor(idx), hi = Math.ceil(idx);
+        if (lo === hi) return sorted[lo];
+        return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+    }
+
+    function drawScatter(canvas, xs, ys, opts) {
+        opts = opts || {};
+        const s = chartSetup(canvas, opts.height || 320);
+        if (!s) return;
+        let xMin = Math.min(...xs), xMax = Math.max(...xs);
+        let yMin = Math.min(...ys), yMax = Math.max(...ys);
+        const xP = (xMax - xMin) * 0.05, yP = (yMax - yMin) * 0.05;
+        xMin -= xP; xMax += xP; yMin -= yP; yMax += yP;
+        drawAxes(s, xMin, xMax, yMin, yMax, opts.xLabel || '', opts.yLabel || '');
+        const { ctx } = s;
+        ctx.fillStyle = ChartColors.primary;
+        for (let i = 0; i < xs.length; i++) {
+            const p = projectXY(s, xs[i], ys[i], xMin, xMax, yMin, yMax);
+            ctx.beginPath(); ctx.arc(p.px, p.py, 3, 0, Math.PI * 2); ctx.fill();
+        }
+        if (opts.line) {
+            // opts.line: {slope, intercept}
+            const x1 = xMin, x2 = xMax;
+            const y1 = opts.line.slope * x1 + opts.line.intercept;
+            const y2 = opts.line.slope * x2 + opts.line.intercept;
+            const p1 = projectXY(s, x1, y1, xMin, xMax, yMin, yMax);
+            const p2 = projectXY(s, x2, y2, xMin, xMax, yMin, yMax);
+            ctx.strokeStyle = ChartColors.accent;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(p1.px, p1.py); ctx.lineTo(p2.px, p2.py); ctx.stroke();
+        }
+    }
+
+    function drawStackedBars(canvas, rowLabels, colLabels, observed, opts) {
+        opts = opts || {};
+        const s = chartSetup(canvas, opts.height || 280, { l: 50, r: 120, t: 14, b: 60 });
+        if (!s) return;
+        const rowTotals = observed.map(r => r.reduce((a, b) => a + b, 0));
+        const maxTotal = Math.max(...rowTotals);
+        drawAxes(s, 0, rowLabels.length, 0, maxTotal, '', opts.yLabel || 'Count', true);
+        const { ctx, pad, innerW, innerH, h, w } = s;
+        const slot = innerW / rowLabels.length;
+        const palette = [ChartColors.primary, ChartColors.secondary, ChartColors.accent, ChartColors.accent2, ChartColors.accent3];
+        rowLabels.forEach((rl, i) => {
+            let yCursor = h - pad.b;
+            const cx = pad.l + i * slot + slot / 2;
+            const barW = Math.min(slot * 0.6, 70);
+            colLabels.forEach((cl, j) => {
+                const v = observed[i][j];
+                const segH = (v / maxTotal) * innerH;
+                ctx.fillStyle = palette[j % palette.length];
+                ctx.fillRect(cx - barW / 2, yCursor - segH, barW, segH);
+                yCursor -= segH;
+            });
+            // x label
+            ctx.fillStyle = ChartColors.text;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            const t = String(rl).length > 14 ? String(rl).slice(0, 13) + '…' : String(rl);
+            ctx.save();
+            ctx.translate(cx, h - pad.b + 6);
+            if (rowLabels.length > 3) ctx.rotate(-Math.PI / 8);
+            ctx.fillText(t, 0, 0);
+            ctx.restore();
+        });
+        // legend
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        colLabels.forEach((cl, j) => {
+            const ly = pad.t + 14 + j * 18;
+            ctx.fillStyle = palette[j % palette.length];
+            ctx.fillRect(w - pad.r + 6, ly - 6, 12, 12);
+            ctx.fillStyle = ChartColors.text;
+            const t = String(cl).length > 12 ? String(cl).slice(0, 11) + '…' : String(cl);
+            ctx.fillText(t, w - pad.r + 22, ly);
+        });
+    }
+
+    // ---------- APA write-up generator ----------
+    function buildApa(test, res, ctx) {
+        if (test === 'ttest') {
+            const sig = res.p < 0.05;
+            return `An independent-samples t-test (Welch's) compared ${ctx.dvName} between ${ctx.levels[0]} (M = ${fmt(res.m1)}, SD = ${fmt(res.sd1)}, n = ${res.n1}) and ${ctx.levels[1]} (M = ${fmt(res.m2)}, SD = ${fmt(res.sd2)}, n = ${res.n2}). The difference was ${sig ? '' : 'not '}statistically significant, t(${fmt(res.df, 2)}) = ${fmt(res.t)}, p ${apaP(res.p)}, d = ${fmt(res.d)}.`;
+        }
+        if (test === 'correlation') {
+            return `A Pearson product-moment correlation between ${ctx.xName} and ${ctx.yName} was ${res.p < 0.05 ? '' : 'not '}statistically significant, r(${res.df}) = ${apaR(res.r)}, p ${apaP(res.p)}, R² = ${fmt(res.r * res.r)}.`;
+        }
+        if (test === 'spearman') {
+            return `A Spearman rank-order correlation between ${ctx.xName} and ${ctx.yName} was ${res.p < 0.05 ? '' : 'not '}statistically significant, ρ(${res.df}) = ${apaR(res.rho)}, p ${apaP(res.p)}.`;
+        }
+        if (test === 'anova') {
+            return `A one-way ANOVA tested the effect of ${ctx.ivName} on ${ctx.dvName}. The omnibus test was ${res.p < 0.05 ? '' : 'not '}statistically significant, F(${res.dfBetween}, ${res.dfWithin}) = ${fmt(res.F)}, p ${apaP(res.p)}, η² = ${fmt(res.eta2)}.`;
+        }
+        if (test === 'chisquare') {
+            return `A chi-square test of independence examined the relation between ${ctx.var1} and ${ctx.var2}. The relation was ${res.p < 0.05 ? '' : 'not '}statistically significant, χ²(${res.df}, N = ${res.total}) = ${fmt(res.chi2)}, p ${apaP(res.p)}${res.cramersV !== null ? `, Cramér's V = ${fmt(res.cramersV)}` : ''}.`;
+        }
+        if (test === 'fisher') {
+            return `Fisher's exact test examined the relation between ${ctx.var1} and ${ctx.var2} (N = ${res.total}). The relation was ${res.p < 0.05 ? '' : 'not '}statistically significant, p ${apaP(res.p)}, OR = ${fmt(res.oddsRatio)}.`;
+        }
+        if (test === 'regression') {
+            return `A simple linear regression predicted ${ctx.yName} from ${ctx.xName}. The model was ${res.pF < 0.05 ? '' : 'not '}statistically significant, F(${res.dfRegression}, ${res.dfResidual}) = ${fmt(res.F)}, p ${apaP(res.pF)}, R² = ${fmt(res.r2)}. The slope was ${res.pSlope < 0.05 ? '' : 'not '}significant, B = ${fmt(res.slope)}, SE = ${fmt(res.seSlope)}, t(${res.dfResidual}) = ${fmt(res.tSlope)}, p ${apaP(res.pSlope)}.`;
+        }
+        if (test === 'multireg') {
+            const lines = [`A multiple linear regression predicted ${ctx.yName} from ${ctx.xNames.join(', ')}. The overall model was ${res.pF < 0.05 ? '' : 'not '}statistically significant, F(${res.dfRegression}, ${res.dfResidual}) = ${fmt(res.F)}, p ${apaP(res.pF)}, R² = ${fmt(res.r2)}, adjusted R² = ${fmt(res.adjR2)}.`];
+            res.coefs.forEach((c, i) => {
+                if (i === 0) return; // skip intercept
+                lines.push(`${ctx.xNames[i - 1]}: B = ${fmt(c.b)}, SE = ${fmt(c.se)}, t(${res.dfResidual}) = ${fmt(c.t)}, p ${apaP(c.p)}.`);
+            });
+            return lines.join(' ');
+        }
+        return '';
+    }
+    function apaP(p) { return p < 0.001 ? '< .001' : '= ' + p.toFixed(3).replace(/^0/, ''); }
+    function apaR(r) { return r.toFixed(3).replace(/^(-?)0/, '$1'); }
+
+    function wireApaButtons() {
+        document.querySelectorAll('.apa-copy-btn[data-apa]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const text = btn.dataset.apa;
+                navigator.clipboard.writeText(text).then(() => {
+                    btn.classList.add('copied');
+                    btn.textContent = '✓ Copied APA write-up to clipboard';
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        btn.textContent = 'Copy APA write-up';
+                    }, 2200);
+                });
+            });
+        });
+    }
+
+    function apaButton(test, res, ctx) {
+        const text = buildApa(test, res, ctx);
+        return `<button class="apa-copy-btn" data-apa="${text.replace(/"/g, '&quot;')}">Copy APA write-up</button>`;
+    }
+
+    // ---------- Pearl chat widget ----------
+    const PEARL_API = 'https://pearl-api.semihasekerlii.workers.dev/';
+    const chatToggle = document.getElementById('chatToggle');
+    const chatWin = document.getElementById('chatWindow');
+    const chatClose = document.getElementById('chatClose');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSend');
+    const chatMsgs = document.getElementById('chatMessages');
+    let chatHistory = [];
+    let chatBusy = false;
+    let lastResultSummary = null;
+
+    function botSay(html) {
+        const d = document.createElement('div');
+        d.className = 'chat-msg bot';
+        d.innerHTML = html;
+        chatMsgs.appendChild(d);
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    }
+    function userSay(text) {
+        const d = document.createElement('div');
+        d.className = 'chat-msg user';
+        d.textContent = text;
+        chatMsgs.appendChild(d);
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    }
+
+    function buildDataContext() {
+        if (!state.columns || state.columns.length === 0) {
+            return { hasData: false };
+        }
+        return {
+            hasData: true,
+            filename: state.filename,
+            rowCount: state.rows.length,
+            columns: state.columns.map(c => ({ name: c.name, type: c.type, n: c.n, nMissing: c.nMissing }))
+        };
+    }
+
+    function openChat() {
+        chatWin.classList.add('open');
+        chatToggle.classList.add('open');
+        chatInput.focus();
+        if (chatMsgs.children.length === 0) {
+            chatHistory = [];
+            const hasData = state.columns && state.columns.length > 0;
+            const welcome = hasData
+                ? `&#128008; Hi! I'm Pearl &mdash; Chico's little brother and Dr. Sekerli's stats tutor. I can see you've uploaded <b>${escapeHtml(state.filename)}</b> with ${state.columns.length} columns. Ask me which test fits your question, or what your results mean!`
+                : `&#128008; Hi! I'm Pearl &mdash; Chico's little brother and Dr. Sekerli's stats tutor. Upload some data and I can help you pick the right test, or ask me anything about research methodology!`;
+            botSay(welcome);
+        }
+    }
+    function closeChat() {
+        chatWin.classList.remove('open');
+        chatToggle.classList.remove('open');
+    }
+
+    chatToggle.addEventListener('click', function() {
+        if (chatWin.classList.contains('open')) closeChat();
+        else openChat();
+    });
+    const askPearlLink = document.getElementById('askPearlLink');
+    if (askPearlLink) askPearlLink.addEventListener('click', function(e) { e.preventDefault(); openChat(); });
+    chatClose.addEventListener('click', closeChat);
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text || chatBusy) return;
+        chatBusy = true;
+        chatSend.disabled = true;
+        userSay(text);
+        chatHistory.push({ role: 'user', content: text });
+        chatInput.value = '';
+
+        const typing = document.createElement('div');
+        typing.className = 'chat-msg bot';
+        typing.style.opacity = '0.6';
+        typing.innerHTML = '&#128008; <i>Pearl is thinking...</i>';
+        chatMsgs.appendChild(typing);
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+        fetch(PEARL_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: chatHistory,
+                dataContext: buildDataContext(),
+                lastResult: lastResultSummary
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (typing.parentNode) typing.parentNode.removeChild(typing);
+            if (data.error) {
+                botSay('&#128008; Hmm, something went wrong: ' + escapeHtml(data.error));
+                chatBusy = false;
+                chatSend.disabled = false;
+                return;
+            }
+            const textParts = [];
+            (data.content || []).forEach(block => {
+                if (block.type === 'text') textParts.push(block.text);
+            });
+            let reply = textParts.join('\n').trim() || "I'm not sure how to respond to that &mdash; try rephrasing?";
+            reply = escapeHtml(reply);
+            // Markdown links: [text](url) — must run before bold/italic so brackets stay intact
+            reply = reply.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            reply = reply.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+            reply = reply.replace(/\*(.+?)\*/g, '<i>$1</i>');
+            reply = reply.replace(/^- /gm, '&bull; ');
+            reply = reply.replace(/\n/g, '<br>');
+            botSay(reply);
+            chatHistory.push({ role: 'assistant', content: data.content });
+            chatBusy = false;
+            chatSend.disabled = false;
+        })
+        .catch(err => {
+            if (typing.parentNode) typing.parentNode.removeChild(typing);
+            botSay("&#128008; Lost connection. Pearl's API may not be deployed yet &mdash; check that <code>pearl-api</code> Worker is live in Cloudflare.");
+            chatBusy = false;
+            chatSend.disabled = false;
+        });
+    }
+
+    // Hook into showResults to capture a summary for Pearl
+    const origShowResults = showResults;
+    showResults = function(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const heading = tmp.querySelector('h3');
+        const interp = tmp.querySelector('.interpretation');
+        lastResultSummary = {
+            test: heading ? heading.textContent.trim() : null,
+            interpretation: interp ? interp.textContent.trim().slice(0, 800) : null
+        };
+        origShowResults(html);
+    };
+
+    // ---------- Formatting ----------
+    function fmt(n, digits) {
+        if (n === null || n === undefined || isNaN(n)) return '—';
+        const d = digits === undefined ? 3 : digits;
+        if (Math.abs(n) < 0.001 && n !== 0) return n.toExponential(2);
+        return Number(n).toFixed(d);
+    }
+    function fmtP(p) {
+        if (p < 0.001) return '< .001';
+        return p.toFixed(3);
+    }
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+})();
+</script>
+
+</body>
+</html>
