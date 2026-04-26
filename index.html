@@ -1656,7 +1656,7 @@ footer {
                 { name: levels[1], values: g2 }
             ], { skipLeveneNote: true })}
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Welch's t-test does not assume equal variances and is the safer default &mdash; even if Levene's flags a violation below, Welch's already corrects for it. Pearl drops rows with missing values on either variable.</p>
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with missing values on either variable.</p>
             ${apaButton('ttest', res, { dvName, levels })}
         </div>`;
         showResults(html);
@@ -1748,7 +1748,7 @@ footer {
 
             ${renderAssumptionsForCorrelation(xs, ys, xName, yName)}
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearson's r assumes a linear relationship and roughly normal distributions. For small samples or skewed data, run Spearman's &rho; from the toggle above. Pearl drops rows with missing values on either variable.</p>
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">For monotonic-but-not-linear relationships or skewed data, run Spearman's &rho; from the Method dropdown above. Pearl drops rows with missing values on either variable.</p>
             ${apaButton('correlation', res, { xName, yName })}
         </div>`;
         showResults(html);
@@ -1890,7 +1890,7 @@ footer {
 
             ${renderAssumptionsForGroups(groups, { skipLeveneNote: false })}
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">One-way ANOVA assumes roughly normal distributions within each group and approximately equal variances across groups. Pearl drops rows with missing values on either variable.</p>
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with missing values on either variable.</p>
             ${apaButton('anova', res, { dvName, ivName })}
         </div>`;
         showResults(html);
@@ -2050,7 +2050,7 @@ footer {
 
             ${renderAssumptionsForRegression(xs, ys, res.slope, res.intercept)}
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Simple linear regression assumes a linear relationship, independent observations, normally distributed residuals, and constant variance across X (homoscedasticity). Pearl drops rows with missing values on either variable.</p>
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with missing values on either variable.</p>
             ${apaButton('regression', res, { xName, yName })}
         </div>`;
         showResults(html);
@@ -2162,7 +2162,7 @@ footer {
 
             ${renderAssumptionsForMultireg(xRows, ys, xNames, res)}
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Multiple regression assumes linearity, independence, normally distributed residuals, homoscedasticity, and no severe multicollinearity (VIF below). Pearl drops rows with any missing predictor or outcome value.</p>
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing predictor or outcome value.</p>
             ${apaButton('multireg', res, { yName, xNames })}
         </div>`;
         showResults(html);
