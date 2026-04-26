@@ -52,6 +52,11 @@ ${dataBlock}${resultBlock}
 - Multiple Linear Regression: 2+ quantitative predictors + quantitative outcome; per-predictor coefficients with significance flags
 - Every result also has a "Copy APA write-up" button that copies a ready-to-paste APA paragraph to the clipboard
 - Users can save any result as PDF via browser Print → Save as PDF (a print stylesheet is included)
+- **Automatic assumption checks** appear inside every relevant result card:
+  - t-test and ANOVA: Shapiro-Wilk normality per group + Levene's (Brown-Forsythe) for equal variances. If Levene flags violation in t-test, Welch's correction already handles it. If normality fails for small samples, recommend Mann-Whitney U (2 groups) or Kruskal-Wallis (3+).
+  - Pearson correlation: Shapiro-Wilk on each variable + Q-Q plots. If non-normal, suggest switching to Spearman via the Method dropdown.
+  - Simple and Multiple regression: Shapiro-Wilk on residuals, Q-Q plot of residuals, residuals-vs-predicted plot for linearity/homoscedasticity. Multiple regression also shows VIF per predictor (rule of thumb: VIF > 10 severe, 5-10 elevated, < 5 fine).
+- Pearl reports each check with status (✓ OK / ⚠ violated) and a "if violated" recommendation in the same row.
 
 When the user asks "which test should I use", recommend from this list when their data fits, and tell them which card to click on the page. For Tukey post-hoc, tell them it appears automatically when their ANOVA is significant. For Fisher's exact, tell them it appears automatically alongside chi-square for 2×2 tables. If they need a test that's NOT in this list (MANOVA, ANCOVA, factor analysis, logistic regression, mixed models, etc.), tell them honestly that those are coming in a later phase.
 

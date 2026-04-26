@@ -938,7 +938,7 @@ footer {
     <div id="chatWindow">
         <div id="chatHeader">
             <div>
-                <h4>&#128008; Pearl &middot; Statistics Tutor</h4>
+                <h4>&#128008;&#8205;&#11035; Pearl &middot; Statistics Tutor</h4>
                 <span>by Dr. Semiha B. Sekerli &middot; Chico's little brother</span>
             </div>
             <button id="chatClose" aria-label="Close chat">&times;</button>
@@ -1262,6 +1262,122 @@ footer {
         return { chi2, df, p, observed, expected, rowLevels, colLevels, rowTotals, colTotals, total, cramersV, lowExpectedCells, totalCells };
     }
 
+    // ---------- Assumption checks ----------
+    function shapiroWilk(values) {
+        // Royston's approximation. Valid for 3 <= n <= 5000.
+        const n = values.length;
+        if (n < 3 || n > 5000) return { W: null, p: null, error: n < 3 ? 'need at least 3 observations' : 'sample too large for Shapiro-Wilk' };
+        const sorted = [...values].sort((a, b) => a - b);
+        const mean = jStat.mean(sorted);
+        const ssTotal = sorted.reduce((s, x) => s + Math.pow(x - mean, 2), 0);
+        if (ssTotal === 0) return { W: 1, p: 1 };
+
+        // Compute m_i = inverse normal CDF((i - 3/8) / (n + 1/4))
+        const m = [];
+        for (let i = 1; i <= n; i++) m.push(jStat.normal.inv((i - 3/8) / (n + 1/4), 0, 1));
+        const mSqSum = m.reduce((s, mi) => s + mi * mi, 0);
+        const a = new Array(n);
+        const cn = m[n-1] / Math.sqrt(mSqSum);
+        a[n-1] = -2.706056*Math.pow(cn,5) + 4.434685*Math.pow(cn,4) - 2.071190*Math.pow(cn,3) - 0.147981*Math.pow(cn,2) + 0.221157*cn + cn;
+        a[0] = -a[n-1];
+        let phiNum = mSqSum - 2*Math.pow(m[n-1], 2);
+        let phiDen = 1 - 2*Math.pow(a[n-1], 2);
+        if (n > 5) {
+            const cn1 = m[n-2] / Math.sqrt(mSqSum);
+            a[n-2] = -3.582633*Math.pow(cn1,5) + 5.682633*Math.pow(cn1,4) - 1.752460*Math.pow(cn1,3) - 0.293762*Math.pow(cn1,2) + 0.042981*cn1 + cn1;
+            a[1] = -a[n-2];
+            phiNum -= 2*Math.pow(m[n-2], 2);
+            phiDen -= 2*Math.pow(a[n-2], 2);
+        }
+        const phi = phiNum / phiDen;
+        const startIdx = n > 5 ? 2 : 1;
+        const endIdx = n > 5 ? n - 3 : n - 2;
+        for (let i = startIdx; i <= endIdx; i++) a[i] = m[i] / Math.sqrt(phi);
+        const num = sorted.reduce((s, x, i) => s + a[i] * x, 0);
+        const W = (num * num) / ssTotal;
+        // P-value transformation
+        let p;
+        if (n === 3) {
+            const w = (6/Math.PI) * (Math.asin(Math.sqrt(W)) - Math.asin(Math.sqrt(0.75)));
+            p = 1 - jStat.normal.cdf(w, 0, 1);
+        } else if (n <= 11) {
+            const g = -2.273 + 0.459 * n;
+            const mu = 0.5440 - 0.39978 * n + 0.025054 * n * n - 0.0006714 * n * n * n;
+            const sigma = Math.exp(1.3822 - 0.77857 * n + 0.062767 * n * n - 0.0020322 * n * n * n);
+            if (1 - W <= 0) p = 1;
+            else {
+                const z = (-Math.log(g - Math.log(1 - W)) - mu) / sigma;
+                p = 1 - jStat.normal.cdf(z, 0, 1);
+            }
+        } else {
+            const u = Math.log(n);
+            const mu = -1.5861 - 0.31082 * u - 0.083751 * u * u + 0.0038915 * u * u * u;
+            const sigma = Math.exp(-0.4803 - 0.082676 * u + 0.0030302 * u * u);
+            if (1 - W <= 0) p = 1;
+            else {
+                const z = (Math.log(1 - W) - mu) / sigma;
+                p = 1 - jStat.normal.cdf(z, 0, 1);
+            }
+        }
+        return { W, p };
+    }
+
+    function leveneTest(groups) {
+        // Brown-Forsythe variant: median-centered Levene's test
+        const k = groups.length;
+        const ns = groups.map(g => g.values.length);
+        const N = ns.reduce((s, x) => s + x, 0);
+        const medians = groups.map(g => jStat.median(g.values));
+        const Z = groups.map((g, i) => g.values.map(x => Math.abs(x - medians[i])));
+        const Zmeans = Z.map(g => jStat.mean(g));
+        const Zall = Z.flat();
+        const Zgrand = jStat.mean(Zall);
+        let num = 0, den = 0;
+        for (let i = 0; i < k; i++) {
+            num += ns[i] * Math.pow(Zmeans[i] - Zgrand, 2);
+            for (let j = 0; j < ns[i]; j++) den += Math.pow(Z[i][j] - Zmeans[i], 2);
+        }
+        const dfBetween = k - 1;
+        const dfWithin = N - k;
+        if (den === 0) return { W: null, p: null };
+        const W = ((N - k) / (k - 1)) * (num / den);
+        const p = 1 - jStat.centralF.cdf(W, dfBetween, dfWithin);
+        return { W, dfBetween, dfWithin, p };
+    }
+
+    function qqData(values) {
+        const n = values.length;
+        const sorted = [...values].sort((a, b) => a - b);
+        const mean = jStat.mean(sorted);
+        const sd = jStat.stdev(sorted, true);
+        const theoretical = [], sample = [];
+        if (sd === 0) return { theoretical: [], sample: [] };
+        for (let i = 1; i <= n; i++) {
+            theoretical.push(jStat.normal.inv((i - 0.5) / n, 0, 1));
+            sample.push((sorted[i-1] - mean) / sd);
+        }
+        return { theoretical, sample };
+    }
+
+    function computeVIFs(xRows, xNames) {
+        const k = xNames.length;
+        if (k < 2) return [];
+        const vifs = [];
+        for (let i = 0; i < k; i++) {
+            try {
+                const newY = xRows.map(row => row[i]);
+                const newX = xRows.map(row => row.filter((_, j) => j !== i));
+                const aux = multipleRegression(newX, newY);
+                const r2 = aux.r2;
+                const vif = r2 >= 0.999 ? Infinity : 1 / (1 - r2);
+                vifs.push({ name: xNames[i], r2, vif });
+            } catch (e) {
+                vifs.push({ name: xNames[i], r2: null, vif: null });
+            }
+        }
+        return vifs;
+    }
+
     function fisherExact2x2(observed) {
         const a = observed[0][0], b = observed[0][1];
         const c = observed[1][0], d = observed[1][1];
@@ -1535,7 +1651,12 @@ footer {
                 <strong>Interpretation:</strong> The mean ${escapeHtml(dvName)} for <strong>${escapeHtml(levels[0])}</strong> (M=${fmt(res.m1)}, SD=${fmt(res.sd1)}, n=${res.n1}) is ${direction} than for <strong>${escapeHtml(levels[1])}</strong> (M=${fmt(res.m2)}, SD=${fmt(res.sd2)}, n=${res.n2}). The difference is <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at α=.05, t(${fmt(res.df, 2)})=${fmt(res.t)}, p=${fmtP(res.p)}. Effect size is ${dLabel} (Cohen's d = ${fmt(res.d)}).
             </div>
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Welch's t-test does not assume equal variances and is the safer default. Pearl drops rows with missing values on either variable.</p>
+            ${renderAssumptionsForGroups([
+                { name: levels[0], values: g1 },
+                { name: levels[1], values: g2 }
+            ], { skipLeveneNote: true })}
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Welch's t-test does not assume equal variances and is the safer default &mdash; even if Levene's flags a violation below, Welch's already corrects for it. Pearl drops rows with missing values on either variable.</p>
             ${apaButton('ttest', res, { dvName, levels })}
         </div>`;
         showResults(html);
@@ -1543,6 +1664,30 @@ footer {
             { name: levels[0], values: g1 },
             { name: levels[1], values: g2 }
         ], { yLabel: dvName });
+    }
+
+    function renderAssumptionsForGroups(groups, opts) {
+        opts = opts || {};
+        const shapiroRows = groups.map(g => {
+            const sw = shapiroWilk(g.values);
+            return renderAssumptionRow(
+                `Normality &mdash; Shapiro-Wilk on "${escapeHtml(g.name)}"`,
+                sw.W !== null ? `W = ${fmt(sw.W)}` : '&mdash;',
+                sw.p,
+                'Consider a non-parametric test (Mann-Whitney U for 2 groups, Kruskal-Wallis for 3+) if you have less than 30 per group.'
+            );
+        }).join('');
+        const lev = leveneTest(groups);
+        const leveneRow = renderAssumptionRow(
+            'Equal variances &mdash; Levene\'s test (Brown-Forsythe)',
+            lev.W !== null ? `W = ${fmt(lev.W)}` : '&mdash;',
+            lev.p,
+            opts.skipLeveneNote ? '' : 'Variances differ significantly. Welch\'s correction handles this.'
+        );
+        return `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Assumption checks</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Check</th><th class="num">Statistic</th><th class="num">p</th><th>Status</th><th>If violated</th>
+            </tr></thead><tbody>${shapiroRows}${leveneRow}</tbody></table>`;
     }
 
     function runCorrelation() {
@@ -1601,11 +1746,43 @@ footer {
                 <strong>Interpretation:</strong> There is a <strong>${strength} ${direction}</strong> linear relationship between ${escapeHtml(xName)} and ${escapeHtml(yName)}, r(${res.df}) = ${fmt(res.r)}, p = ${fmtP(res.p)}. ${sig ? '<span class="sig-yes">This correlation is statistically significant</span> at α=.05.' : '<span class="sig-no">This correlation is not statistically significant</span> at α=.05.'} The two variables share about ${(res.r * res.r * 100).toFixed(1)}% of their variance.
             </div>
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearson's r assumes a linear relationship and roughly normal distributions. For small samples or skewed data, run Spearman's ρ from the toggle above. Pearl drops rows with missing values on either variable.</p>
+            ${renderAssumptionsForCorrelation(xs, ys, xName, yName)}
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearson's r assumes a linear relationship and roughly normal distributions. For small samples or skewed data, run Spearman's &rho; from the toggle above. Pearl drops rows with missing values on either variable.</p>
             ${apaButton('correlation', res, { xName, yName })}
         </div>`;
         showResults(html);
         drawScatter(document.getElementById('corr-chart'), xs, ys, { xLabel: xName, yLabel: yName });
+        const xqq = qqData(xs), yqq = qqData(ys);
+        drawQQ(document.getElementById('corr-qq-x'), xqq.theoretical, xqq.sample, { xLabel: 'Theoretical', yLabel: xName });
+        drawQQ(document.getElementById('corr-qq-y'), yqq.theoretical, yqq.sample, { xLabel: 'Theoretical', yLabel: yName });
+    }
+
+    function renderAssumptionsForCorrelation(xs, ys, xName, yName) {
+        const swX = shapiroWilk(xs);
+        const swY = shapiroWilk(ys);
+        const rows = [
+            renderAssumptionRow(
+                `Normality &mdash; Shapiro-Wilk on "${escapeHtml(xName)}"`,
+                swX.W !== null ? `W = ${fmt(swX.W)}` : '&mdash;',
+                swX.p,
+                'Use Spearman\'s &rho; instead (toggle Method above).'
+            ),
+            renderAssumptionRow(
+                `Normality &mdash; Shapiro-Wilk on "${escapeHtml(yName)}"`,
+                swY.W !== null ? `W = ${fmt(swY.W)}` : '&mdash;',
+                swY.p,
+                'Use Spearman\'s &rho; instead (toggle Method above).'
+            )
+        ].join('');
+        return `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Assumption checks</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Check</th><th class="num">Statistic</th><th class="num">p</th><th>Status</th><th>If violated</th>
+            </tr></thead><tbody>${rows}</tbody></table>
+            <div class="chart-grid" style="margin-top:14px;">
+                <div class="chart-tile"><div class="tile-label">Q-Q plot &mdash; ${escapeHtml(xName)}</div><canvas id="corr-qq-x"></canvas></div>
+                <div class="chart-tile"><div class="tile-label">Q-Q plot &mdash; ${escapeHtml(yName)}</div><canvas id="corr-qq-y"></canvas></div>
+            </div>`;
     }
 
     function runSpearman(xs, ys, xName, yName) {
@@ -1710,6 +1887,8 @@ footer {
             </div>
 
             ${sig ? renderTukeyHSD(groups, res.msWithin, res.dfWithin) : ''}
+
+            ${renderAssumptionsForGroups(groups, { skipLeveneNote: false })}
 
             <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">One-way ANOVA assumes roughly normal distributions within each group and approximately equal variances across groups. Pearl drops rows with missing values on either variable.</p>
             ${apaButton('anova', res, { dvName, ivName })}
@@ -1869,6 +2048,8 @@ footer {
                 <strong>Interpretation:</strong> For every one-unit increase in ${escapeHtml(xName)}, ${escapeHtml(yName)} ${direction} by ${fmt(Math.abs(res.slope))} units, on average. The slope is <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, t(${res.dfResidual}) = ${fmt(res.tSlope)}, p = ${fmtP(res.pSlope)}. The model explains ${(res.r2 * 100).toFixed(1)}% of the variance in ${escapeHtml(yName)} (R&sup2; = ${fmt(res.r2)}).
             </div>
 
+            ${renderAssumptionsForRegression(xs, ys, res.slope, res.intercept)}
+
             <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Simple linear regression assumes a linear relationship, independent observations, normally distributed residuals, and constant variance across X (homoscedasticity). Pearl drops rows with missing values on either variable.</p>
             ${apaButton('regression', res, { xName, yName })}
         </div>`;
@@ -1877,6 +2058,32 @@ footer {
             xLabel: xName, yLabel: yName,
             line: { slope: res.slope, intercept: res.intercept }
         });
+        const predicted = xs.map(x => res.slope * x + res.intercept);
+        const residuals = ys.map((y, i) => y - predicted[i]);
+        drawResidualPlot(document.getElementById('reg-resid'), predicted, residuals);
+        const rqq = qqData(residuals);
+        drawQQ(document.getElementById('reg-qq'), rqq.theoretical, rqq.sample, { yLabel: 'Standardized Residuals' });
+    }
+
+    function renderAssumptionsForRegression(xs, ys, slope, intercept) {
+        const predicted = xs.map(x => slope * x + intercept);
+        const residuals = ys.map((y, i) => y - predicted[i]);
+        const sw = shapiroWilk(residuals);
+        const row = renderAssumptionRow(
+            'Normality of residuals &mdash; Shapiro-Wilk',
+            sw.W !== null ? `W = ${fmt(sw.W)}` : '&mdash;',
+            sw.p,
+            'Consider transforming Y (log, sqrt) or using a robust regression method.'
+        );
+        return `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Assumption checks</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Check</th><th class="num">Statistic</th><th class="num">p</th><th>Status</th><th>If violated</th>
+            </tr></thead><tbody>${row}</tbody></table>
+            <div class="chart-grid" style="margin-top:14px;">
+                <div class="chart-tile"><div class="tile-label">Residuals vs. Predicted (linearity + homoscedasticity)</div><canvas id="reg-resid"></canvas></div>
+                <div class="chart-tile"><div class="tile-label">Q-Q plot of residuals (normality)</div><canvas id="reg-qq"></canvas></div>
+            </div>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:8px;">Look for: residuals scattered evenly around zero (linearity), constant spread across X (homoscedasticity), Q-Q points close to the green diagonal (normality).</p>`;
     }
 
     function runMultiReg() {
@@ -1953,10 +2160,59 @@ footer {
                 <strong>Interpretation:</strong> The overall model is <span class="${sigModel ? 'sig-yes' : 'sig-no'}">${sigModel ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, F(${res.dfRegression}, ${res.dfResidual}) = ${fmt(res.F)}, p = ${fmtP(res.pF)}, R&sup2; = ${fmt(res.r2)}. The predictors together explain ${(res.r2 * 100).toFixed(1)}% of the variance in ${escapeHtml(yName)}. Look at each predictor's row above &mdash; predictors flagged "sig." make a unique contribution after controlling for the others.
             </div>
 
-            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Multiple regression assumes linearity, independence, normally distributed residuals, homoscedasticity, and no severe multicollinearity. Pearl drops rows with any missing predictor or outcome value.</p>
+            ${renderAssumptionsForMultireg(xRows, ys, xNames, res)}
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Multiple regression assumes linearity, independence, normally distributed residuals, homoscedasticity, and no severe multicollinearity (VIF below). Pearl drops rows with any missing predictor or outcome value.</p>
             ${apaButton('multireg', res, { yName, xNames })}
         </div>`;
         showResults(html);
+        // Compute predicted + residuals for plots
+        const design = xRows.map(row => [1, ...row]);
+        const predicted = design.map(row => row.reduce((s, v, i) => s + v * res.coefs[i].b, 0));
+        const residuals = ys.map((y, i) => y - predicted[i]);
+        drawResidualPlot(document.getElementById('multireg-resid'), predicted, residuals);
+        const rqq = qqData(residuals);
+        drawQQ(document.getElementById('multireg-qq'), rqq.theoretical, rqq.sample, { yLabel: 'Standardized Residuals' });
+    }
+
+    function renderAssumptionsForMultireg(xRows, ys, xNames, res) {
+        // Compute predicted + residuals
+        const design = xRows.map(row => [1, ...row]);
+        const predicted = design.map(row => row.reduce((s, v, i) => s + v * res.coefs[i].b, 0));
+        const residuals = ys.map((y, i) => y - predicted[i]);
+        const sw = shapiroWilk(residuals);
+        const swRow = renderAssumptionRow(
+            'Normality of residuals &mdash; Shapiro-Wilk',
+            sw.W !== null ? `W = ${fmt(sw.W)}` : '&mdash;',
+            sw.p,
+            'Consider transforming Y or using a robust regression method.'
+        );
+        // VIF table
+        const vifs = computeVIFs(xRows, xNames);
+        const vifRows = vifs.map(v => {
+            const flag = v.vif === null ? 'n/a' : (v.vif > 10 ? '<span class="sig-no">&#9888; severe</span>' : (v.vif > 5 ? '<span class="sig-no">elevated</span>' : '<span class="sig-yes">&#10003; OK</span>'));
+            return `<tr>
+                <td><strong>${escapeHtml(v.name)}</strong></td>
+                <td class="num">${v.vif === null ? '&mdash;' : (isFinite(v.vif) ? fmt(v.vif) : '&infin;')}</td>
+                <td class="num">${v.r2 === null ? '&mdash;' : fmt(v.r2)}</td>
+                <td>${flag}</td>
+            </tr>`;
+        }).join('');
+        return `<h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:24px 0 8px;">Assumption checks</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Check</th><th class="num">Statistic</th><th class="num">p</th><th>Status</th><th>If violated</th>
+            </tr></thead><tbody>${swRow}</tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Multicollinearity (Variance Inflation Factors)</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Predictor</th><th class="num">VIF</th><th class="num">R&sup2; from auxiliary regression</th><th>Status</th>
+            </tr></thead><tbody>${vifRows}</tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Rule of thumb: VIF &gt; 10 means severe multicollinearity (consider dropping one of the correlated predictors); VIF 5-10 is moderate; VIF &lt; 5 is fine.</p>
+
+            <div class="chart-grid" style="margin-top:14px;">
+                <div class="chart-tile"><div class="tile-label">Residuals vs. Predicted (linearity + homoscedasticity)</div><canvas id="multireg-resid"></canvas></div>
+                <div class="chart-tile"><div class="tile-label">Q-Q plot of residuals (normality)</div><canvas id="multireg-qq"></canvas></div>
+            </div>`;
     }
 
     function showResults(html) {
@@ -2208,6 +2464,73 @@ footer {
         }
     }
 
+    function drawQQ(canvas, theoretical, sample, opts) {
+        opts = opts || {};
+        const s = chartSetup(canvas, opts.height || 240);
+        if (!s || theoretical.length === 0) return;
+        const allVals = theoretical.concat(sample);
+        let lo = Math.min(...allVals), hi = Math.max(...allVals);
+        const pad = (hi - lo) * 0.05;
+        lo -= pad; hi += pad;
+        drawAxes(s, lo, hi, lo, hi, opts.xLabel || 'Theoretical Quantiles', opts.yLabel || 'Sample Quantiles');
+        const { ctx } = s;
+        // Reference line y = x (perfect normality)
+        const p1 = projectXY(s, lo, lo, lo, hi, lo, hi);
+        const p2 = projectXY(s, hi, hi, lo, hi, lo, hi);
+        ctx.strokeStyle = ChartColors.accent;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(p1.px, p1.py); ctx.lineTo(p2.px, p2.py); ctx.stroke();
+        ctx.setLineDash([]);
+        // Sample points
+        ctx.fillStyle = ChartColors.primary;
+        for (let i = 0; i < theoretical.length; i++) {
+            const p = projectXY(s, theoretical[i], sample[i], lo, hi, lo, hi);
+            ctx.beginPath(); ctx.arc(p.px, p.py, 2.5, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    function drawResidualPlot(canvas, predicted, residuals, opts) {
+        opts = opts || {};
+        const s = chartSetup(canvas, opts.height || 240);
+        if (!s || predicted.length === 0) return;
+        let xMin = Math.min(...predicted), xMax = Math.max(...predicted);
+        const absMax = Math.max(...residuals.map(r => Math.abs(r)));
+        const yMin = -absMax * 1.1, yMax = absMax * 1.1;
+        const xPad = (xMax - xMin) * 0.05;
+        xMin -= xPad; xMax += xPad;
+        drawAxes(s, xMin, xMax, yMin, yMax, opts.xLabel || 'Predicted', opts.yLabel || 'Residual');
+        const { ctx } = s;
+        // Zero reference line
+        const z1 = projectXY(s, xMin, 0, xMin, xMax, yMin, yMax);
+        const z2 = projectXY(s, xMax, 0, xMin, xMax, yMin, yMax);
+        ctx.strokeStyle = ChartColors.accent;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(z1.px, z1.py); ctx.lineTo(z2.px, z2.py); ctx.stroke();
+        ctx.setLineDash([]);
+        // Points
+        ctx.fillStyle = ChartColors.primary;
+        for (let i = 0; i < predicted.length; i++) {
+            const p = projectXY(s, predicted[i], residuals[i], xMin, xMax, yMin, yMax);
+            ctx.beginPath(); ctx.arc(p.px, p.py, 3, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    function renderAssumptionRow(label, statText, p, suggestion) {
+        const violated = p !== null && p < 0.05;
+        const verdict = p === null ? '&mdash;' : (violated
+            ? `<span class="sig-no">&#9888; violated</span>`
+            : `<span class="sig-yes">&#10003; OK</span>`);
+        return `<tr>
+            <td><strong>${label}</strong></td>
+            <td class="num">${statText}</td>
+            <td class="num">${p === null ? '&mdash;' : fmtP(p)}</td>
+            <td>${verdict}</td>
+            <td style="color:#7f8c8d;font-size:13px;">${violated && suggestion ? suggestion : ''}</td>
+        </tr>`;
+    }
+
     function drawStackedBars(canvas, rowLabels, colLabels, observed, opts) {
         opts = opts || {};
         const s = chartSetup(canvas, opts.height || 280, { l: 50, r: 120, t: 14, b: 60 });
@@ -2354,11 +2677,7 @@ footer {
         chatInput.focus();
         if (chatMsgs.children.length === 0) {
             chatHistory = [];
-            const hasData = state.columns && state.columns.length > 0;
-            const welcome = hasData
-                ? `&#128008; Hi! I'm Pearl &mdash; Chico's little brother and Dr. Sekerli's stats tutor. I can see you've uploaded <b>${escapeHtml(state.filename)}</b> with ${state.columns.length} columns. Ask me which test fits your question, or what your results mean!`
-                : `&#128008; Hi! I'm Pearl &mdash; Chico's little brother and Dr. Sekerli's stats tutor. Upload some data and I can help you pick the right test, or ask me anything about research methodology!`;
-            botSay(welcome);
+            botSay("&#128008;&#8205;&#11035; Hi, I'm Pearl, Dr. Sekerli's stats tutor and Chico's little brother. How can I help?");
         }
     }
     function closeChat() {
