@@ -490,6 +490,151 @@ table.preview tr:hover td { background: #1c2333; }
 .apa-copy-btn:hover { border-color: #c0392b; color: #ffffff; }
 .apa-copy-btn.copied { border-color: #27ae60; color: #27ae60; }
 
+/* Phase 5 (Pyodide) — advanced section divider, badges, loading modal */
+.advanced-divider {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed #30363d;
+    margin-bottom: 12px;
+}
+.advanced-divider .advanced-label {
+    display: inline-block;
+    font-size: 11px;
+    color: #f39c12;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    margin-right: 10px;
+}
+.advanced-divider .advanced-sub {
+    color: #7f8c8d;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.test-btn-advanced { border-color: #463415; }
+.test-btn-advanced:hover { border-color: #f39c12; }
+.test-btn-advanced.active { border-color: #f39c12; background: #2a2419; }
+.adv-pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    background: #f39c12;
+    color: #0d1117;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+#pyodideModal {
+    position: fixed; inset: 0;
+    background: rgba(13, 17, 23, 0.88);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+#pyodideModal.show { display: flex; }
+#pyodideModal .panel {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 28px 32px;
+    width: min(460px, calc(100vw - 32px));
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    text-align: center;
+}
+#pyodideModal h3 {
+    color: #ffffff;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    margin-bottom: 6px;
+}
+#pyodideModal .py-sub {
+    color: #b0b8c0;
+    font-size: 13px;
+    margin-bottom: 22px;
+    line-height: 1.5;
+}
+#pyodideModal .py-stage {
+    text-align: left;
+    color: #e0e0e0;
+    font-size: 13px;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#pyodideModal .py-stage .py-bullet {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #30363d;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+#pyodideModal .py-stage.active .py-bullet {
+    border-color: #f39c12;
+    border-top-color: transparent;
+    animation: pySpin 0.9s linear infinite;
+}
+#pyodideModal .py-stage.done .py-bullet {
+    border-color: #27ae60;
+    background: #27ae60;
+    position: relative;
+}
+#pyodideModal .py-stage.done .py-bullet::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 0px;
+    width: 4px; height: 8px;
+    border-right: 2px solid #0d1117;
+    border-bottom: 2px solid #0d1117;
+    transform: rotate(45deg);
+}
+#pyodideModal .py-stage.done { color: #7f8c8d; }
+#pyodideModal .py-stage.error .py-bullet { border-color: #c0392b; background: #c0392b; }
+#pyodideModal .py-stage.error { color: #c0392b; }
+#pyodideModal .py-foot {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #30363d;
+    color: #7f8c8d;
+    font-size: 11px;
+}
+#pyodideModal .py-error-msg {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: #2a1f24;
+    border: 1px solid #c0392b;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 12px;
+    text-align: left;
+    display: none;
+}
+#pyodideModal .py-error-msg.show { display: block; }
+#pyodideModal .py-close {
+    margin-top: 14px;
+    background: transparent;
+    border: 1px solid #30363d;
+    color: #b0b8c0;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    display: none;
+}
+#pyodideModal .py-close.show { display: inline-block; }
+@keyframes pySpin { to { transform: rotate(360deg); } }
+
+.coef-table-wrap { overflow-x: auto; }
+.factor-loading-pos { color: #27ae60; font-weight: 600; }
+.factor-loading-strong { background: rgba(39, 174, 96, 0.18); }
+.factor-loading-weak { color: #6c7989; }
+
 /* Pearl chat widget (mirrors Chico's pattern) */
 #chatWidget { position: fixed; bottom: 24px; right: 24px; z-index: 9999; font-family: 'Inter', sans-serif; }
 #chatToggle {
@@ -806,6 +951,25 @@ footer {
                 </button>
             </div>
 
+            <div class="advanced-divider">
+                <span class="advanced-label">Advanced &middot; Python in your browser</span>
+                <span class="advanced-sub">First click downloads ~30 MB (numpy, scipy, statsmodels). Runs entirely on your machine &mdash; data never leaves the browser.</span>
+            </div>
+            <div class="tests tests-advanced">
+                <button class="test-btn test-btn-advanced" data-test="logistic">
+                    <strong>Logistic Regression <span class="adv-pill">PY</span></strong>
+                    <em>Predict a binary outcome from one or more predictors (odds ratios, AUC)</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="manova">
+                    <strong>MANOVA <span class="adv-pill">PY</span></strong>
+                    <em>Compare 2+ continuous outcomes across groups (Wilks, Pillai)</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="factor">
+                    <strong>Factor Analysis <span class="adv-pill">PY</span></strong>
+                    <em>Find latent factors in 3+ continuous variables (varimax loadings, scree)</em>
+                </button>
+            </div>
+
             <!-- Descriptives config -->
             <div class="test-config" id="config-descriptives">
                 <h4>No options needed</h4>
@@ -921,6 +1085,77 @@ footer {
                 <button class="btn" id="run-multireg" style="margin-top:14px;">Run multiple regression</button>
                 <div class="config-error" id="multireg-error"></div>
             </div>
+
+            <!-- Logistic Regression config -->
+            <div class="test-config" id="config-logistic">
+                <h4>Configure Logistic Regression</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="logistic-y">Outcome (categorical, exactly 2 levels)</label>
+                        <select id="logistic-y"></select>
+                    </div>
+                    <div class="config-field" id="logistic-positive-wrap" style="display:none;">
+                        <label for="logistic-positive">Code as "1" (the event)</label>
+                        <select id="logistic-positive"></select>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Predictors (quantitative or categorical)</label>
+                    <div id="logistic-predictors" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                    <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Categorical predictors are dummy-coded automatically (first level = reference).</p>
+                </div>
+                <button class="btn" id="run-logistic" style="margin-top:14px;">Run logistic regression</button>
+                <div class="config-error" id="logistic-error"></div>
+            </div>
+
+            <!-- MANOVA config -->
+            <div class="test-config" id="config-manova">
+                <h4>Configure MANOVA</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="manova-iv">Independent variable (categorical, 2+ levels)</label>
+                        <select id="manova-iv"></select>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Dependent variables (pick 2 or more quantitative)</label>
+                    <div id="manova-dvs" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+                <button class="btn" id="run-manova" style="margin-top:14px;">Run MANOVA</button>
+                <div class="config-error" id="manova-error"></div>
+            </div>
+
+            <!-- Factor Analysis config -->
+            <div class="test-config" id="config-factor">
+                <h4>Configure Exploratory Factor Analysis</h4>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Variables (pick 3 or more quantitative)</label>
+                    <div id="factor-vars" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+                <div class="config-row" style="margin-top:14px;">
+                    <div class="config-field">
+                        <label for="factor-nfactors">Number of factors</label>
+                        <select id="factor-nfactors">
+                            <option value="auto">Auto (Kaiser, eigenvalue &gt; 1)</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <div class="config-field">
+                        <label for="factor-rotation">Rotation</label>
+                        <select id="factor-rotation">
+                            <option value="varimax">Varimax (orthogonal)</option>
+                            <option value="promax">Promax (oblique)</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" id="run-factor" style="margin-top:14px;">Run factor analysis</button>
+                <div class="config-error" id="factor-error"></div>
+            </div>
         </div>
 
         <!-- Results -->
@@ -928,6 +1163,19 @@ footer {
     </div>
 </main>
 
+<div id="pyodideModal" aria-hidden="true">
+    <div class="panel">
+        <h3>&#128008;&#8205;&#11035; Pearl is loading Python...</h3>
+        <p class="py-sub">First-time setup downloads the scientific Python stack. After this, advanced tests run instantly.</p>
+        <div class="py-stage" id="py-stage-runtime"><span class="py-bullet"></span><span class="py-text">Pyodide runtime (~6 MB)</span></div>
+        <div class="py-stage" id="py-stage-packages"><span class="py-bullet"></span><span class="py-text">numpy &middot; scipy &middot; pandas (~20 MB)</span></div>
+        <div class="py-stage" id="py-stage-statsmodels"><span class="py-bullet"></span><span class="py-text">statsmodels (~5 MB)</span></div>
+        <div class="py-stage" id="py-stage-warmup"><span class="py-bullet"></span><span class="py-text">Warming up the interpreter</span></div>
+        <div class="py-error-msg" id="py-error-msg"></div>
+        <button class="py-close" id="py-close-btn">Close</button>
+        <div class="py-foot">Your data never leaves your browser. All computation happens locally.</div>
+    </div>
+</div>
 <div id="pearlSpeech"></div>
 <div id="pearlZzz">&#128164;</div>
 <div id="chatWidget">
@@ -1082,6 +1330,36 @@ footer {
         fillSelect('reg-y', quantCols, 1);
         fillSelect('multireg-y', quantCols);
         fillPredictorChips('multireg-predictors', quantCols);
+
+        // Phase 5 selectors
+        const binaryCategCols = categCols.filter(c => new Set(c.categValues).size === 2);
+        fillSelect('logistic-y', binaryCategCols);
+        refreshLogisticForY();
+        fillSelect('manova-iv', categCols);
+        fillPredictorChips('manova-dvs', quantCols);
+        fillPredictorChips('factor-vars', quantCols);
+    }
+
+    function refreshLogisticForY() {
+        const yCol = document.getElementById('logistic-y').value;
+        const yColumn = yCol ? getColumn(yCol) : null;
+        const posSel = document.getElementById('logistic-positive');
+        const posWrap = document.getElementById('logistic-positive-wrap');
+        posSel.innerHTML = '';
+        if (yColumn && yColumn.type === 'categ') {
+            const levels = Array.from(new Set(yColumn.categValues));
+            levels.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l; opt.textContent = l;
+                posSel.appendChild(opt);
+            });
+            posWrap.style.display = '';
+        } else {
+            posWrap.style.display = 'none';
+        }
+        // Predictors = everything except the Y column
+        const others = state.columns.filter(c => c.name !== yCol);
+        fillPredictorChips('logistic-predictors', others);
     }
 
     function fillPredictorChips(containerId, cols) {
@@ -1502,6 +1780,10 @@ footer {
     document.getElementById('run-chisquare').addEventListener('click', runChiSquare);
     document.getElementById('run-regression').addEventListener('click', runRegression);
     document.getElementById('run-multireg').addEventListener('click', runMultiReg);
+    document.getElementById('run-logistic').addEventListener('click', runLogistic);
+    document.getElementById('run-manova').addEventListener('click', runManova);
+    document.getElementById('run-factor').addEventListener('click', runFactor);
+    document.getElementById('logistic-y').addEventListener('change', refreshLogisticForY);
 
     function runDescriptives() {
         let html = `<div class="result-card">
@@ -2215,6 +2497,748 @@ footer {
             </div>`;
     }
 
+    // ====================================================================
+    // PHASE 5 — Pyodide-powered advanced tests
+    // ====================================================================
+    const PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+    let pyodideReadyPromise = null;
+    let currentStage = null;
+
+    const pyodideModal = document.getElementById('pyodideModal');
+    const pyCloseBtn = document.getElementById('py-close-btn');
+    const pyErrorMsg = document.getElementById('py-error-msg');
+
+    function setStage(name, status) {
+        const el = document.getElementById('py-stage-' + name);
+        if (!el) return;
+        el.classList.remove('active', 'done', 'error');
+        if (status) el.classList.add(status);
+        if (status === 'active') currentStage = name;
+    }
+    function resetStages() {
+        ['runtime', 'packages', 'statsmodels', 'warmup'].forEach(s => setStage(s, ''));
+        pyErrorMsg.classList.remove('show');
+        pyErrorMsg.textContent = '';
+        pyCloseBtn.classList.remove('show');
+    }
+    function showPyodideModal() {
+        resetStages();
+        pyodideModal.classList.add('show');
+    }
+    function hidePyodideModal() { pyodideModal.classList.remove('show'); }
+    function showPyodideError(msg) {
+        pyErrorMsg.textContent = msg;
+        pyErrorMsg.classList.add('show');
+        pyCloseBtn.classList.add('show');
+    }
+    pyCloseBtn.addEventListener('click', hidePyodideModal);
+
+    function ensurePyodide() {
+        if (pyodideReadyPromise) return pyodideReadyPromise;
+        showPyodideModal();
+        pyodideReadyPromise = (async () => {
+            try {
+                setStage('runtime', 'active');
+                if (!window.loadPyodide) {
+                    await new Promise((resolve, reject) => {
+                        const s = document.createElement('script');
+                        s.src = PYODIDE_URL + 'pyodide.js';
+                        s.onload = resolve;
+                        s.onerror = () => reject(new Error('Could not download pyodide.js. Check your internet connection.'));
+                        document.head.appendChild(s);
+                    });
+                }
+                const pyodide = await window.loadPyodide({ indexURL: PYODIDE_URL });
+                setStage('runtime', 'done');
+
+                setStage('packages', 'active');
+                await pyodide.loadPackage(['numpy', 'scipy', 'pandas']);
+                setStage('packages', 'done');
+
+                setStage('statsmodels', 'active');
+                await pyodide.loadPackage(['statsmodels']);
+                setStage('statsmodels', 'done');
+
+                setStage('warmup', 'active');
+                await pyodide.runPythonAsync([
+                    'import numpy as np',
+                    'import pandas as pd',
+                    'import scipy.stats',
+                    'import statsmodels.api as sm',
+                    'from statsmodels.multivariate.manova import MANOVA',
+                    'from statsmodels.multivariate.factor import Factor',
+                    'import json'
+                ].join('\n'));
+                setStage('warmup', 'done');
+
+                setTimeout(hidePyodideModal, 350);
+                return pyodide;
+            } catch (err) {
+                console.error('Pyodide load failed', err);
+                if (currentStage) setStage(currentStage, 'error');
+                showPyodideError(err.message || String(err));
+                pyodideReadyPromise = null;
+                throw err;
+            }
+        })();
+        return pyodideReadyPromise;
+    }
+
+    function buildPyDataset(colNames) {
+        // Returns rows with all listed columns non-missing, plus a parallel dict for Pyodide
+        const cols = colNames.map(getColumn).filter(Boolean);
+        const keep = [];
+        for (let i = 0; i < state.rows.length; i++) {
+            const row = state.rows[i];
+            let ok = true;
+            for (let c of cols) {
+                const v = row[c.name];
+                if (v === null || v === undefined || String(v).trim() === '') { ok = false; break; }
+                if (c.type === 'quant' && isNaN(parseFloat(v))) { ok = false; break; }
+            }
+            if (ok) keep.push(row);
+        }
+        const data = {};
+        cols.forEach(c => {
+            if (c.type === 'quant') data[c.name] = keep.map(r => parseFloat(r[c.name]));
+            else data[c.name] = keep.map(r => String(r[c.name]));
+        });
+        return { data, n: keep.length };
+    }
+
+    async function runWithPyodide(testName, errorElId, fn) {
+        const errorEl = document.getElementById(errorElId);
+        errorEl.textContent = '';
+        let pyodide;
+        try {
+            pyodide = await ensurePyodide();
+        } catch (e) {
+            // Modal already shows the error; nothing else to do here.
+            return;
+        }
+        try {
+            await fn(pyodide);
+        } catch (e) {
+            console.error(testName + ' failed', e);
+            const msg = (e && e.message) ? e.message : String(e);
+            errorEl.innerHTML = '<strong>Pearl ran into trouble:</strong> ' + escapeHtml(msg.split('\n')[0]) + '<br><span style="font-size:11px;color:#7f8c8d;">Full traceback in the browser console (F12).</span>';
+        }
+    }
+
+    // ---------- Logistic Regression ----------
+    async function runLogistic() {
+        const yCol = document.getElementById('logistic-y').value;
+        const positive = document.getElementById('logistic-positive').value;
+        const checked = Array.from(document.querySelectorAll('#logistic-predictors input:checked')).map(i => i.value);
+        const errEl = document.getElementById('logistic-error');
+        errEl.textContent = '';
+        if (!yCol) return errEl.textContent = 'Pick an outcome variable first.';
+        if (!positive) return errEl.textContent = 'Pick which level codes as the event (1).';
+        if (checked.length === 0) return errEl.textContent = 'Pick at least one predictor.';
+
+        const yColumn = getColumn(yCol);
+        if (!yColumn || yColumn.type !== 'categ') return errEl.textContent = 'Outcome must be categorical with exactly 2 levels.';
+        const levels = Array.from(new Set(yColumn.categValues));
+        if (levels.length !== 2) return errEl.textContent = `Outcome has ${levels.length} levels — logistic regression needs exactly 2. Use multinomial methods for more.`;
+
+        const allCols = [yCol, ...checked];
+        const ds = buildPyDataset(allCols);
+        if (ds.n < checked.length + 5) return errEl.textContent = `After dropping rows with missing values, only ${ds.n} rows remain — too few for ${checked.length} predictors.`;
+
+        const predictorTypes = checked.map(name => getColumn(name).type);
+
+        await runWithPyodide('logistic', 'logistic-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('y_col', yCol);
+            pyodide.globals.set('positive_value', positive);
+            pyodide.globals.set('predictor_cols', pyodide.toPy(checked));
+            pyodide.globals.set('predictor_types', pyodide.toPy(predictorTypes));
+
+            const py = `
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import json
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+df['_y_'] = (df[y_col].astype(str) == str(positive_value)).astype(int)
+
+X_cols = []
+labels = []
+for col, ctype in zip(list(predictor_cols), list(predictor_types)):
+    if ctype == 'quant':
+        X_cols.append(pd.to_numeric(df[col], errors='coerce').rename(col))
+        labels.append(col)
+    else:
+        dummies = pd.get_dummies(df[col].astype(str), prefix=col, drop_first=True).astype(float)
+        for c in dummies.columns:
+            X_cols.append(dummies[c])
+            labels.append(c)
+
+X = pd.concat(X_cols, axis=1)
+X = sm.add_constant(X, has_constant='add').astype(float)
+y = df['_y_'].astype(float)
+
+try:
+    res = sm.Logit(y, X).fit(disp=0, maxiter=200)
+except Exception as e:
+    raise RuntimeError(f"Logit could not converge: {e}. Check for perfect separation, collinear predictors, or constant outcomes.")
+
+ll_full = float(res.llf)
+ll_null = float(res.llnull)
+mcfadden = 1.0 - (ll_full / ll_null) if ll_null != 0 else None
+ci = res.conf_int(); ci.columns = ['lo', 'hi']
+
+coefs = []
+for name in res.params.index:
+    b = float(res.params[name]); se = float(res.bse[name]); p = float(res.pvalues[name])
+    coefs.append({
+        'name': str(name), 'b': b, 'se': se, 'z': b/se if se else None, 'p': p,
+        'or': float(np.exp(b)), 'or_lo': float(np.exp(ci.loc[name,'lo'])), 'or_hi': float(np.exp(ci.loc[name,'hi']))
+    })
+
+yhat = np.asarray(res.predict(X))
+yt = y.values
+n_pos = int(yt.sum()); n_neg = int(len(yt) - n_pos)
+auc = None
+if n_pos > 0 and n_neg > 0:
+    pos_scores = yhat[yt == 1]; neg_scores = yhat[yt == 0]
+    # AUC via Mann-Whitney U
+    from scipy.stats import rankdata
+    all_scores = np.concatenate([pos_scores, neg_scores])
+    ranks = rankdata(all_scores)
+    rank_sum_pos = ranks[:n_pos].sum()
+    u = rank_sum_pos - n_pos * (n_pos + 1) / 2
+    auc = float(u / (n_pos * n_neg))
+
+# ROC curve points (limit to 200 pts for plotting)
+order = np.argsort(-yhat)
+sorted_y = yt[order]
+tps = np.cumsum(sorted_y)
+fps = np.cumsum(1 - sorted_y)
+tpr = tps / max(n_pos, 1)
+fpr = fps / max(n_neg, 1)
+roc_x = np.concatenate([[0.0], fpr, [1.0]])
+roc_y = np.concatenate([[0.0], tpr, [1.0]])
+if len(roc_x) > 200:
+    idx = np.linspace(0, len(roc_x)-1, 200).astype(int)
+    roc_x = roc_x[idx]; roc_y = roc_y[idx]
+
+# Confusion at 0.5
+pc = (yhat >= 0.5).astype(int)
+tp = int(((pc==1)&(yt==1)).sum()); fp = int(((pc==1)&(yt==0)).sum())
+fn = int(((pc==0)&(yt==1)).sum()); tn = int(((pc==0)&(yt==0)).sum())
+acc = (tp+tn)/len(yt) if len(yt) else None
+
+# LR test (overall)
+lr_chi2 = float(2 * (ll_full - ll_null))
+lr_df = int(len(res.params) - 1)
+from scipy.stats import chi2 as chi2_dist
+lr_p = float(1 - chi2_dist.cdf(lr_chi2, lr_df)) if lr_df > 0 else None
+
+result = {
+    'y_col': y_col, 'positive': str(positive_value), 'negative': [lvl for lvl in df[y_col].astype(str).unique() if lvl != str(positive_value)][0],
+    'predictor_labels': labels,
+    'n': int(len(df)), 'n_pos': n_pos, 'n_neg': n_neg,
+    'coefs': coefs,
+    'mcfadden_r2': mcfadden,
+    'aic': float(res.aic), 'bic': float(res.bic),
+    'll_full': ll_full, 'll_null': ll_null,
+    'lr_chi2': lr_chi2, 'lr_df': lr_df, 'lr_p': lr_p,
+    'auc': auc,
+    'roc_x': roc_x.tolist(), 'roc_y': roc_y.tolist(),
+    'cm': {'tp': tp, 'fp': fp, 'fn': fn, 'tn': tn, 'accuracy': acc}
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderLogistic(result);
+        });
+    }
+
+    function renderLogistic(res) {
+        const overallSig = res.lr_p !== null && res.lr_p < 0.05;
+        let coefRows = '';
+        res.coefs.forEach(c => {
+            const isConst = c.name === 'const';
+            const sig = c.p < 0.05;
+            const orStr = isConst ? '&mdash;' : `${fmt(c.or)} <span style="color:#7f8c8d;font-size:11px;">[${fmt(c.or_lo)}, ${fmt(c.or_hi)}]</span>`;
+            coefRows += `<tr>
+                <td><strong>${escapeHtml(isConst ? '(Intercept)' : c.name)}</strong></td>
+                <td class="num">${fmt(c.b)}</td>
+                <td class="num">${fmt(c.se)}</td>
+                <td class="num">${fmt(c.z)}</td>
+                <td class="num">${fmtP(c.p)}</td>
+                <td class="num">${orStr}</td>
+                <td><span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+        const aucStr = res.auc === null ? '&mdash;' : fmt(res.auc);
+        const aucLabel = res.auc === null ? '' : (res.auc < 0.6 ? ' (poor)' : res.auc < 0.7 ? ' (fair)' : res.auc < 0.8 ? ' (good)' : res.auc < 0.9 ? ' (very good)' : ' (excellent)');
+        const cm = res.cm;
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Logistic Regression</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Predicting <strong>${escapeHtml(res.y_col)} = ${escapeHtml(res.positive)}</strong> (vs. ${escapeHtml(res.negative)}) from ${res.predictor_labels.length} predictor${res.predictor_labels.length === 1 ? '' : 's'}. N = ${res.n} (${res.n_pos} events, ${res.n_neg} non-events).</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">Coefficients</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead><tr>
+                <th>Predictor</th><th class="num">B</th><th class="num">SE</th><th class="num">z</th><th class="num">p</th><th class="num">OR [95% CI]</th><th>Sig.</th>
+            </tr></thead><tbody>${coefRows}</tbody></table>
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Model fit</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>Likelihood-ratio &chi;&sup2;(${res.lr_df})</td><td class="num">${fmt(res.lr_chi2)}</td><td class="num">p ${apaP(res.lr_p)}</td></tr>
+                <tr><td>McFadden's pseudo-R&sup2;</td><td class="num">${fmt(res.mcfadden_r2)}</td><td class="num">&mdash;</td></tr>
+                <tr><td>AIC / BIC</td><td class="num">${fmt(res.aic)}</td><td class="num">${fmt(res.bic)}</td></tr>
+                <tr><td>Log-likelihood (full / null)</td><td class="num">${fmt(res.ll_full)}</td><td class="num">${fmt(res.ll_null)}</td></tr>
+                <tr><td>AUC (discrimination)</td><td class="num">${aucStr}${aucLabel}</td><td class="num">&mdash;</td></tr>
+                <tr><td>Accuracy at threshold 0.5</td><td class="num">${cm.accuracy === null ? '&mdash;' : (cm.accuracy * 100).toFixed(1) + '%'}</td><td class="num">&mdash;</td></tr>
+            </tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Confusion matrix (threshold = 0.5)</h4>
+            <table class="stats-table"><thead><tr>
+                <th></th><th class="num">Predicted ${escapeHtml(res.positive)}</th><th class="num">Predicted ${escapeHtml(res.negative)}</th>
+            </tr></thead><tbody>
+                <tr><td><strong>Actual ${escapeHtml(res.positive)}</strong></td><td class="num"><span class="sig-yes">${cm.tp}</span> (TP)</td><td class="num"><span class="sig-no">${cm.fn}</span> (FN)</td></tr>
+                <tr><td><strong>Actual ${escapeHtml(res.negative)}</strong></td><td class="num"><span class="sig-no">${cm.fp}</span> (FP)</td><td class="num"><span class="sig-yes">${cm.tn}</span> (TN)</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The overall model is <span class="${overallSig ? 'sig-yes' : 'sig-no'}">${overallSig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, &chi;&sup2;(${res.lr_df}) = ${fmt(res.lr_chi2)}, p ${apaP(res.lr_p)}, McFadden's R&sup2; = ${fmt(res.mcfadden_r2)}. ${res.auc !== null ? `Discrimination is${aucLabel} (AUC = ${fmt(res.auc)}).` : ''} Each odds ratio is the multiplicative change in the odds of <em>${escapeHtml(res.y_col)} = ${escapeHtml(res.positive)}</em> for a one-unit increase in the predictor (holding other predictors fixed).
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">ROC curve</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">ROC (AUC = ${aucStr})</div><canvas id="logistic-roc"></canvas></div>
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing predictor or outcome value. Categorical predictors are dummy-coded with the first alphabetical level as reference.</p>
+            ${apaButton('logistic', res, {})}
+        </div>`;
+        showResults(html);
+        drawROC(document.getElementById('logistic-roc'), res.roc_x, res.roc_y);
+    }
+
+    function drawROC(canvas, xs, ys) {
+        const s = chartSetup(canvas, 320);
+        if (!s) return;
+        drawAxes(s, 0, 1, 0, 1, 'False Positive Rate (1 - Specificity)', 'True Positive Rate (Sensitivity)');
+        const { ctx, pad, innerW, innerH, h } = s;
+        // Diagonal reference
+        ctx.strokeStyle = ChartColors.grid;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, h - pad.b);
+        ctx.lineTo(pad.l + innerW, pad.t);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // ROC curve
+        ctx.strokeStyle = ChartColors.primary;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < xs.length; i++) {
+            const px = pad.l + xs[i] * innerW;
+            const py = h - pad.b - ys[i] * innerH;
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        // Fill under
+        ctx.fillStyle = 'rgba(192, 57, 43, 0.15)';
+        ctx.lineTo(pad.l + innerW, h - pad.b);
+        ctx.lineTo(pad.l, h - pad.b);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // ---------- MANOVA ----------
+    async function runManova() {
+        const ivCol = document.getElementById('manova-iv').value;
+        const checked = Array.from(document.querySelectorAll('#manova-dvs input:checked')).map(i => i.value);
+        const errEl = document.getElementById('manova-error');
+        errEl.textContent = '';
+        if (!ivCol) return errEl.textContent = 'Pick the grouping (IV) variable.';
+        if (checked.length < 2) return errEl.textContent = 'Pick at least 2 quantitative dependent variables.';
+
+        const ivColumn = getColumn(ivCol);
+        if (!ivColumn || ivColumn.type !== 'categ') return errEl.textContent = 'IV must be categorical.';
+        const levels = Array.from(new Set(ivColumn.categValues));
+        if (levels.length < 2) return errEl.textContent = `IV has only ${levels.length} level — need at least 2.`;
+
+        const allCols = [ivCol, ...checked];
+        const ds = buildPyDataset(allCols);
+        if (ds.n < checked.length + levels.length) return errEl.textContent = `After dropping rows with missing values, only ${ds.n} rows remain — not enough for MANOVA.`;
+
+        await runWithPyodide('manova', 'manova-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('iv_col', ivCol);
+            pyodide.globals.set('dv_cols', pyodide.toPy(checked));
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+from statsmodels.multivariate.manova import MANOVA
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+for c in list(dv_cols):
+    df[c] = pd.to_numeric(df[c], errors='coerce')
+df = df.dropna()
+
+dv_list = list(dv_cols)
+# Quote column names so spaces/special chars don't break the patsy formula
+quoted_dvs = ' + '.join('Q("' + c.replace('"','\\\\"') + '")' for c in dv_list)
+formula = quoted_dvs + ' ~ C(Q("' + iv_col.replace('"','\\\\"') + '"))'
+manova = MANOVA.from_formula(formula, data=df)
+mvres = manova.mv_test()
+
+# Find the IV's row (skip Intercept)
+iv_key = None
+for k in mvres.results.keys():
+    if 'Intercept' not in k:
+        iv_key = k; break
+stats = mvres.results[iv_key]['stat']
+
+tests = []
+for tname in stats.index:
+    row = stats.loc[tname]
+    def s(v):
+        try:
+            v = float(v)
+            return v if not (np.isnan(v) or np.isinf(v)) else None
+        except: return None
+    tests.append({
+        'name': str(tname),
+        'value': s(row['Value']),
+        'df_num': s(row['Num DF']),
+        'df_den': s(row['Den DF']),
+        'F': s(row['F Value']),
+        'p': s(row['Pr > F'])
+    })
+
+groups = sorted(df[iv_col].astype(str).unique())
+group_means = {}
+group_sds = {}
+group_ns = {}
+for dv in dv_list:
+    group_means[dv] = {g: float(df[df[iv_col].astype(str) == g][dv].mean()) for g in groups}
+    group_sds[dv] = {g: float(df[df[iv_col].astype(str) == g][dv].std(ddof=1)) for g in groups}
+    group_ns[dv] = {g: int((df[iv_col].astype(str) == g).sum()) for g in groups}
+
+# Per-DV univariate ANOVAs (so users can see which DV drives the effect)
+from scipy.stats import f_oneway
+univariate = []
+for dv in dv_list:
+    arrays = [df[df[iv_col].astype(str) == g][dv].values for g in groups]
+    arrays = [a for a in arrays if len(a) > 1]
+    if len(arrays) >= 2:
+        f, p = f_oneway(*arrays)
+        univariate.append({'dv': dv, 'F': float(f), 'p': float(p), 'df_between': len(arrays)-1, 'df_within': sum(len(a) for a in arrays) - len(arrays)})
+    else:
+        univariate.append({'dv': dv, 'F': None, 'p': None, 'df_between': None, 'df_within': None})
+
+result = {
+    'iv': iv_col, 'dvs': dv_list, 'groups': groups, 'n': int(len(df)),
+    'tests': tests,
+    'group_means': group_means, 'group_sds': group_sds, 'group_ns': group_ns,
+    'univariate': univariate
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderManova(result);
+        });
+    }
+
+    function renderManova(res) {
+        const wilks = res.tests.find(t => /Wilks/i.test(t.name));
+        const overallSig = wilks && wilks.p !== null && wilks.p < 0.05;
+        let multiRows = '';
+        res.tests.forEach(t => {
+            const sig = t.p !== null && t.p < 0.05;
+            multiRows += `<tr>
+                <td><strong>${escapeHtml(t.name)}</strong></td>
+                <td class="num">${fmt(t.value)}</td>
+                <td class="num">${t.F === null ? '&mdash;' : fmt(t.F)}</td>
+                <td class="num">${t.df_num === null ? '&mdash;' : fmt(t.df_num, 1)}</td>
+                <td class="num">${t.df_den === null ? '&mdash;' : fmt(t.df_den, 1)}</td>
+                <td class="num">${t.p === null ? '&mdash;' : fmtP(t.p)}</td>
+                <td><span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+
+        let descRows = '';
+        res.dvs.forEach(dv => {
+            descRows += `<tr><td colspan="${res.groups.length + 1}" style="padding-top:14px;color:#c0392b;font-weight:600;text-transform:uppercase;font-size:12px;letter-spacing:1px;">${escapeHtml(dv)}</td></tr>`;
+            descRows += `<tr><td><em>Mean (SD), n</em></td>`;
+            res.groups.forEach(g => {
+                const m = res.group_means[dv][g];
+                const sd = res.group_sds[dv][g];
+                const n = res.group_ns[dv][g];
+                descRows += `<td class="num">${fmt(m)} (${fmt(sd)}), n=${n}</td>`;
+            });
+            descRows += `</tr>`;
+        });
+        const descHeader = `<tr><th>Variable</th>${res.groups.map(g => `<th class="num">${escapeHtml(g)}</th>`).join('')}</tr>`;
+
+        let univRows = '';
+        res.univariate.forEach(u => {
+            const sig = u.p !== null && u.p < 0.05;
+            univRows += `<tr>
+                <td><strong>${escapeHtml(u.dv)}</strong></td>
+                <td class="num">${u.F === null ? '&mdash;' : fmt(u.F)}</td>
+                <td class="num">${u.df_between === null ? '&mdash;' : `${u.df_between}, ${u.df_within}`}</td>
+                <td class="num">${u.p === null ? '&mdash;' : fmtP(u.p)}</td>
+                <td><span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Multivariate Analysis of Variance (MANOVA)</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Effect of <strong>${escapeHtml(res.iv)}</strong> (${res.groups.length} groups: ${res.groups.map(escapeHtml).join(', ')}) on ${res.dvs.length} dependent variables: <em>${res.dvs.map(escapeHtml).join(', ')}</em>. N = ${res.n}.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">Multivariate tests</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead><tr>
+                <th>Test</th><th class="num">Statistic</th><th class="num">F</th><th class="num">df1</th><th class="num">df2</th><th class="num">p</th><th>Sig.</th>
+            </tr></thead><tbody>${multiRows}</tbody></table>
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Group descriptives</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead>${descHeader}</thead><tbody>${descRows}</tbody></table>
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Follow-up: per-DV one-way ANOVAs</h4>
+            <table class="stats-table"><thead><tr>
+                <th>DV</th><th class="num">F</th><th class="num">df</th><th class="num">p</th><th>Sig.</th>
+            </tr></thead><tbody>${univRows}</tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Per-DV ANOVAs are inflated by multiple testing &mdash; consider Bonferroni adjustment (use &alpha;=${(0.05/res.dvs.length).toFixed(4)} for ${res.dvs.length} DVs).</p>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The multivariate effect of ${escapeHtml(res.iv)} on the combined DVs is <span class="${overallSig ? 'sig-yes' : 'sig-no'}">${overallSig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05${wilks && wilks.value !== null ? `, Wilks' &Lambda; = ${fmt(wilks.value)}, F(${fmt(wilks.df_num, 1)}, ${fmt(wilks.df_den, 1)}) = ${fmt(wilks.F)}, p ${apaP(wilks.p)}` : ''}. ${overallSig ? 'Look at the per-DV follow-ups to see which dependent variables drive the effect.' : 'No follow-up tests are warranted.'} Pillai's trace is the most robust to assumption violations; Roy's largest root is the most powerful when the effect concentrates on one dimension.
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing value across the IV or DVs.</p>
+            ${apaButton('manova', res, {})}
+        </div>`;
+        showResults(html);
+    }
+
+    // ---------- Factor Analysis ----------
+    async function runFactor() {
+        const checked = Array.from(document.querySelectorAll('#factor-vars input:checked')).map(i => i.value);
+        const nFactorsArg = document.getElementById('factor-nfactors').value;
+        const rotation = document.getElementById('factor-rotation').value;
+        const errEl = document.getElementById('factor-error');
+        errEl.textContent = '';
+        if (checked.length < 3) return errEl.textContent = 'Pick at least 3 quantitative variables.';
+
+        const ds = buildPyDataset(checked);
+        if (ds.n < checked.length * 3) return errEl.textContent = `After dropping rows with missing values, only ${ds.n} rows remain — need at least ${checked.length * 3} (3× the number of variables).`;
+
+        await runWithPyodide('factor', 'factor-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('var_cols', pyodide.toPy(checked));
+            pyodide.globals.set('n_factors_arg', nFactorsArg);
+            pyodide.globals.set('rotation_arg', rotation);
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+from scipy.stats import chi2 as chi2_dist
+from statsmodels.multivariate.factor import Factor
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+var_list = list(var_cols)
+for c in var_list:
+    df[c] = pd.to_numeric(df[c], errors='coerce')
+df = df.dropna()
+X = df[var_list].astype(float)
+n = int(len(X)); p = int(len(var_list))
+
+corr = np.corrcoef(X.T)
+# KMO
+inv = np.linalg.pinv(corr)
+diag_inv = np.diag(inv)
+denom = np.sqrt(np.outer(np.maximum(diag_inv, 1e-12), np.maximum(diag_inv, 1e-12)))
+partial = -inv / denom
+np.fill_diagonal(partial, 0)
+corr_off = corr.copy(); np.fill_diagonal(corr_off, 0)
+sum_corr2 = float((corr_off ** 2).sum())
+sum_partial2 = float((partial ** 2).sum())
+kmo_val = sum_corr2 / (sum_corr2 + sum_partial2) if (sum_corr2 + sum_partial2) else None
+
+# Bartlett's test of sphericity
+det = float(np.linalg.det(corr))
+chi2_stat = -((n - 1) - (2*p + 5)/6) * np.log(max(det, 1e-300))
+bartlett_df = p * (p - 1) / 2
+bartlett_p = float(1 - chi2_dist.cdf(chi2_stat, bartlett_df))
+
+# Initial eigenvalues (for scree plot + auto-determine factor count)
+eigvals_initial = np.sort(np.linalg.eigvalsh(corr))[::-1]
+
+# Determine factor count
+if str(n_factors_arg) == 'auto':
+    nf = max(1, int((eigvals_initial > 1).sum()))
+else:
+    nf = int(n_factors_arg)
+nf = min(nf, p - 1) if p > 1 else 1
+
+# Fit
+try:
+    fa = Factor(X.values, n_factor=nf, method='ml')
+    fres = fa.fit()
+except Exception:
+    # Fallback: principal axis
+    fa = Factor(X.values, n_factor=nf, method='pa')
+    fres = fa.fit()
+
+if rotation_arg != 'none':
+    try:
+        fres.rotate(rotation_arg)
+    except Exception:
+        pass
+
+loadings = np.array(fres.loadings)  # p x nf
+communalities = (loadings ** 2).sum(axis=1)
+unique_var = 1 - communalities
+ssl = (loadings ** 2).sum(axis=0)
+pct_var = ssl / p
+cum_pct = np.cumsum(pct_var)
+
+result = {
+    'vars': var_list, 'n': n, 'p': p, 'n_factors': int(nf),
+    'rotation': str(rotation_arg),
+    'kmo': float(kmo_val) if kmo_val is not None else None,
+    'bartlett_chi2': float(chi2_stat), 'bartlett_df': float(bartlett_df), 'bartlett_p': bartlett_p,
+    'eigenvalues': [float(v) for v in eigvals_initial.tolist()],
+    'loadings': [[float(v) for v in row] for row in loadings.tolist()],
+    'communalities': [float(v) for v in communalities.tolist()],
+    'unique_variance': [float(v) for v in unique_var.tolist()],
+    'ssl': [float(v) for v in ssl.tolist()],
+    'pct_var': [float(v) for v in pct_var.tolist()],
+    'cum_pct_var': [float(v) for v in cum_pct.tolist()]
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderFactor(result);
+        });
+    }
+
+    function renderFactor(res) {
+        const kmoLabel = res.kmo === null ? '' : (res.kmo < 0.5 ? ' (unacceptable)' : res.kmo < 0.6 ? ' (mediocre)' : res.kmo < 0.7 ? ' (middling)' : res.kmo < 0.8 ? ' (good)' : ' (very good)');
+        const bartlettSig = res.bartlett_p < 0.05;
+        const kmoOk = res.kmo !== null && res.kmo >= 0.6;
+
+        let loadingHeader = '<tr><th>Variable</th>';
+        for (let f = 0; f < res.n_factors; f++) loadingHeader += `<th class="num">F${f + 1}</th>`;
+        loadingHeader += '<th class="num">Communality</th><th class="num">Uniqueness</th></tr>';
+
+        let loadingRows = '';
+        res.vars.forEach((v, i) => {
+            loadingRows += `<tr><td><strong>${escapeHtml(v)}</strong></td>`;
+            for (let f = 0; f < res.n_factors; f++) {
+                const ld = res.loadings[i][f];
+                const abs = Math.abs(ld);
+                const cls = abs >= 0.4 ? 'factor-loading-strong' : (abs < 0.3 ? 'factor-loading-weak' : '');
+                loadingRows += `<td class="num ${cls}">${fmt(ld)}</td>`;
+            }
+            loadingRows += `<td class="num">${fmt(res.communalities[i])}</td><td class="num">${fmt(res.unique_variance[i])}</td></tr>`;
+        });
+
+        let varRows = '';
+        for (let f = 0; f < res.n_factors; f++) {
+            varRows += `<tr><td><strong>F${f + 1}</strong></td>
+                <td class="num">${fmt(res.ssl[f])}</td>
+                <td class="num">${(res.pct_var[f] * 100).toFixed(1)}%</td>
+                <td class="num">${(res.cum_pct_var[f] * 100).toFixed(1)}%</td></tr>`;
+        }
+
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Exploratory Factor Analysis</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">${res.p} variables, ${res.n_factors} factor${res.n_factors === 1 ? '' : 's'} extracted, ${res.rotation === 'none' ? 'no rotation' : res.rotation + ' rotation'}. N = ${res.n}.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">Suitability for factor analysis</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>Kaiser-Meyer-Olkin (KMO)</td><td class="num">${fmt(res.kmo)}${kmoLabel}</td><td>${kmoOk ? '<span class="sig-yes">&#10003; OK</span>' : '<span class="sig-no">&#9888; low</span>'}</td></tr>
+                <tr><td>Bartlett's test of sphericity, &chi;&sup2;(${res.bartlett_df})</td><td class="num">${fmt(res.bartlett_chi2)}, p ${apaP(res.bartlett_p)}</td><td>${bartlettSig ? '<span class="sig-yes">&#10003; sig.</span>' : '<span class="sig-no">&#9888; ns</span>'}</td></tr>
+            </tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">KMO &ge; 0.6 and a significant Bartlett test indicate the data are factorable.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Variance explained</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Factor</th><th class="num">Sum of squared loadings</th><th class="num">% variance</th><th class="num">Cumulative %</th>
+            </tr></thead><tbody>${varRows}</tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Factor loadings ${res.rotation !== 'none' ? `(${res.rotation}-rotated)` : ''}</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead>${loadingHeader}</thead><tbody>${loadingRows}</tbody></table>
+            </div>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Loadings &ge; |0.40| are highlighted as meaningful. Communality = proportion of a variable's variance explained by the factors.</p>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> ${kmoOk && bartlettSig ? 'The data are suitable for factor analysis' : 'Data suitability is questionable'} (KMO = ${fmt(res.kmo)}, Bartlett p ${apaP(res.bartlett_p)}). The ${res.n_factors}-factor solution explains <strong>${(res.cum_pct_var[res.cum_pct_var.length - 1] * 100).toFixed(1)}%</strong> of the total variance. To name a factor, look at its column above and read off the variables loading strongly (|&lambda;| &ge; 0.40) on it.
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Scree plot</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">Eigenvalues (from correlation matrix). Kaiser cutoff: eigenvalue = 1.</div><canvas id="factor-scree"></canvas></div>
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing value across the selected variables. Loadings reflect the rotated solution.</p>
+            ${apaButton('factor', res, {})}
+        </div>`;
+        showResults(html);
+        drawScree(document.getElementById('factor-scree'), res.eigenvalues, res.n_factors);
+    }
+
+    function drawScree(canvas, eigs, nKept) {
+        const s = chartSetup(canvas, 320);
+        if (!s) return;
+        const yMax = Math.max(1.1, Math.max(...eigs) * 1.1);
+        drawAxes(s, 1, eigs.length, 0, yMax, 'Factor #', 'Eigenvalue');
+        const { ctx, pad, innerW, innerH, h } = s;
+        // Kaiser line at y=1
+        ctx.strokeStyle = ChartColors.secondary;
+        ctx.setLineDash([5, 4]);
+        const yKaiser = h - pad.b - (1 / yMax) * innerH;
+        ctx.beginPath(); ctx.moveTo(pad.l, yKaiser); ctx.lineTo(pad.l + innerW, yKaiser); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = ChartColors.secondary; ctx.font = '10px Inter, sans-serif';
+        ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+        ctx.fillText('Kaiser (1.0)', pad.l + innerW - 4, yKaiser - 2);
+        // Line connecting eigenvalues
+        ctx.strokeStyle = ChartColors.primary; ctx.lineWidth = 2;
+        ctx.beginPath();
+        eigs.forEach((e, i) => {
+            const px = pad.l + ((i) / Math.max(1, eigs.length - 1)) * innerW;
+            const py = h - pad.b - (e / yMax) * innerH;
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+        // Points (filled if kept)
+        eigs.forEach((e, i) => {
+            const px = pad.l + ((i) / Math.max(1, eigs.length - 1)) * innerW;
+            const py = h - pad.b - (e / yMax) * innerH;
+            ctx.fillStyle = i < nKept ? ChartColors.primary : '#1c2333';
+            ctx.strokeStyle = ChartColors.primary;
+            ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        });
+    }
+
     function showResults(html) {
         const r = document.getElementById('results');
         r.innerHTML = html;
@@ -2605,6 +3629,25 @@ footer {
                 lines.push(`${ctx.xNames[i - 1]}: B = ${fmt(c.b)}, SE = ${fmt(c.se)}, t(${res.dfResidual}) = ${fmt(c.t)}, p ${apaP(c.p)}.`);
             });
             return lines.join(' ');
+        }
+        if (test === 'logistic') {
+            const sig = res.lr_p !== null && res.lr_p < 0.05;
+            const lines = [`A logistic regression predicted ${res.y_col} = ${res.positive} (vs. ${res.negative}; n_event = ${res.n_pos}, n_non-event = ${res.n_neg}, N = ${res.n}). The overall model was ${sig ? '' : 'not '}statistically significant, χ²(${res.lr_df}) = ${fmt(res.lr_chi2)}, p ${apaP(res.lr_p)}, McFadden's R² = ${fmt(res.mcfadden_r2)}${res.auc !== null ? `, AUC = ${fmt(res.auc)}` : ''}.`];
+            res.coefs.forEach(c => {
+                if (c.name === 'const') return;
+                lines.push(`${c.name}: B = ${fmt(c.b)}, SE = ${fmt(c.se)}, OR = ${fmt(c.or)} [${fmt(c.or_lo)}, ${fmt(c.or_hi)}], p ${apaP(c.p)}.`);
+            });
+            return lines.join(' ');
+        }
+        if (test === 'manova') {
+            const wilks = res.tests.find(t => /Wilks/i.test(t.name));
+            if (!wilks) return '';
+            const sig = wilks.p !== null && wilks.p < 0.05;
+            return `A one-way MANOVA tested the effect of ${res.iv} on ${res.dvs.join(', ')} (N = ${res.n}). The multivariate effect was ${sig ? '' : 'not '}statistically significant, Wilks' Λ = ${fmt(wilks.value)}, F(${fmt(wilks.df_num, 1)}, ${fmt(wilks.df_den, 1)}) = ${fmt(wilks.F)}, p ${apaP(wilks.p)}.`;
+        }
+        if (test === 'factor') {
+            const totalVar = (res.cum_pct_var[res.cum_pct_var.length - 1] * 100).toFixed(1);
+            return `An exploratory factor analysis with ${res.rotation === 'none' ? 'no rotation' : res.rotation + ' rotation'} extracted ${res.n_factors} factor${res.n_factors === 1 ? '' : 's'} from ${res.p} variables (N = ${res.n}). KMO = ${fmt(res.kmo)}; Bartlett's test of sphericity, χ²(${res.bartlett_df}) = ${fmt(res.bartlett_chi2)}, p ${apaP(res.bartlett_p)}. The ${res.n_factors}-factor solution explained ${totalVar}% of the total variance.`;
         }
         return '';
     }
