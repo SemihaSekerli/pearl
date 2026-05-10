@@ -976,6 +976,34 @@ footer {
                     <strong>Factorial ANOVA <span class="adv-pill">PY</span></strong>
                     <em>Two categorical IVs &mdash; tests main effects and the interaction</em>
                 </button>
+                <button class="test-btn test-btn-advanced" data-test="pairedt">
+                    <strong>Paired t-Test <span class="adv-pill">PY</span></strong>
+                    <em>Same subjects measured twice &mdash; e.g., pre vs. post</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="mannwhitney">
+                    <strong>Mann-Whitney U <span class="adv-pill">PY</span></strong>
+                    <em>Non-parametric alternative to the t-test (when normality fails)</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="wilcoxon">
+                    <strong>Wilcoxon Signed-Rank <span class="adv-pill">PY</span></strong>
+                    <em>Non-parametric paired test (when paired t-test assumptions fail)</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="kruskal">
+                    <strong>Kruskal-Wallis <span class="adv-pill">PY</span></strong>
+                    <em>Non-parametric alternative to one-way ANOVA (with Dunn's post-hoc)</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="cronbach">
+                    <strong>Cronbach's &alpha; <span class="adv-pill">PY</span></strong>
+                    <em>Internal-consistency reliability for survey scales (3+ items)</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="rmanova">
+                    <strong>Repeated-Measures ANOVA <span class="adv-pill">PY</span></strong>
+                    <em>Same subjects measured 3+ times &mdash; e.g., time 1, time 2, time 3</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="multinom">
+                    <strong>Multinomial Logistic <span class="adv-pill">PY</span></strong>
+                    <em>Predict a categorical outcome with 3+ levels (extension of logistic)</em>
+                </button>
             </div>
 
             <!-- Descriptives config -->
@@ -1206,6 +1234,123 @@ footer {
                 <button class="btn" id="run-factorial" style="margin-top:14px;">Run factorial ANOVA</button>
                 <div class="config-error" id="factorial-error"></div>
             </div>
+
+            <!-- Paired t-Test config -->
+            <div class="test-config" id="config-pairedt">
+                <h4>Configure Paired t-Test</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="pairedt-v1">Variable 1 (e.g., pre)</label>
+                        <select id="pairedt-v1"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="pairedt-v2">Variable 2 (e.g., post)</label>
+                        <select id="pairedt-v2"></select>
+                    </div>
+                </div>
+                <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Each row should be one subject &mdash; Pearl pairs Variable 1 and Variable 2 by row.</p>
+                <button class="btn" id="run-pairedt" style="margin-top:14px;">Run paired t-test</button>
+                <div class="config-error" id="pairedt-error"></div>
+            </div>
+
+            <!-- Mann-Whitney U config -->
+            <div class="test-config" id="config-mannwhitney">
+                <h4>Configure Mann-Whitney U Test</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="mannwhitney-dv">Dependent variable (quantitative or ordinal)</label>
+                        <select id="mannwhitney-dv"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="mannwhitney-iv">Independent variable (categorical, 2 levels)</label>
+                        <select id="mannwhitney-iv"></select>
+                    </div>
+                </div>
+                <button class="btn" id="run-mannwhitney" style="margin-top:14px;">Run Mann-Whitney U</button>
+                <div class="config-error" id="mannwhitney-error"></div>
+            </div>
+
+            <!-- Wilcoxon signed-rank config -->
+            <div class="test-config" id="config-wilcoxon">
+                <h4>Configure Wilcoxon Signed-Rank Test</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="wilcoxon-v1">Variable 1 (e.g., pre)</label>
+                        <select id="wilcoxon-v1"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="wilcoxon-v2">Variable 2 (e.g., post)</label>
+                        <select id="wilcoxon-v2"></select>
+                    </div>
+                </div>
+                <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Each row should be one subject &mdash; Pearl pairs the two variables by row. Non-parametric alternative to the paired t-test.</p>
+                <button class="btn" id="run-wilcoxon" style="margin-top:14px;">Run Wilcoxon signed-rank</button>
+                <div class="config-error" id="wilcoxon-error"></div>
+            </div>
+
+            <!-- Kruskal-Wallis config -->
+            <div class="test-config" id="config-kruskal">
+                <h4>Configure Kruskal-Wallis Test</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="kruskal-dv">Dependent variable (quantitative or ordinal)</label>
+                        <select id="kruskal-dv"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="kruskal-iv">Independent variable (categorical, 2+ levels)</label>
+                        <select id="kruskal-iv"></select>
+                    </div>
+                </div>
+                <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Pearl runs Dunn's post-hoc with Bonferroni correction automatically when the omnibus test is significant.</p>
+                <button class="btn" id="run-kruskal" style="margin-top:14px;">Run Kruskal-Wallis</button>
+                <div class="config-error" id="kruskal-error"></div>
+            </div>
+
+            <!-- Cronbach's alpha config -->
+            <div class="test-config" id="config-cronbach">
+                <h4>Configure Cronbach's &alpha;</h4>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Items (pick 3 or more numerically-scored items, e.g., Likert scale items)</label>
+                    <div id="cronbach-items" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+                <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Items should be scored in the same direction. If an item is reverse-coded, recode it before uploading.</p>
+                <button class="btn" id="run-cronbach" style="margin-top:14px;">Run Cronbach's &alpha;</button>
+                <div class="config-error" id="cronbach-error"></div>
+            </div>
+
+            <!-- Repeated-Measures ANOVA config -->
+            <div class="test-config" id="config-rmanova">
+                <h4>Configure Repeated-Measures ANOVA</h4>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Repeated-measure columns (pick 2 or more &mdash; in time order)</label>
+                    <div id="rmanova-measures" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+                <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Each row should be one subject. Pearl treats your selected columns as repeated measurements on the same person (e.g., pretest, midtest, posttest).</p>
+                <button class="btn" id="run-rmanova" style="margin-top:14px;">Run Repeated-Measures ANOVA</button>
+                <div class="config-error" id="rmanova-error"></div>
+            </div>
+
+            <!-- Multinomial Logistic config -->
+            <div class="test-config" id="config-multinom">
+                <h4>Configure Multinomial Logistic Regression</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="multinom-y">Outcome (categorical, 3+ levels)</label>
+                        <select id="multinom-y"></select>
+                    </div>
+                    <div class="config-field" id="multinom-reference-wrap">
+                        <label for="multinom-reference">Reference level</label>
+                        <select id="multinom-reference"></select>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Predictors (quantitative or categorical)</label>
+                    <div id="multinom-predictors" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                    <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Categorical predictors are dummy-coded automatically. Each non-reference outcome level gets its own set of coefficients.</p>
+                </div>
+                <button class="btn" id="run-multinom" style="margin-top:14px;">Run multinomial logistic</button>
+                <div class="config-error" id="multinom-error"></div>
+            </div>
         </div>
 
         <!-- Results -->
@@ -1396,6 +1541,40 @@ footer {
         fillSelect('factorial-dv', quantCols);
         fillSelect('factorial-iv1', categCols);
         fillSelect('factorial-iv2', categCols, 1);
+
+        // Phase 7 selectors (non-parametric + reliability)
+        fillSelect('pairedt-v1', quantCols);
+        fillSelect('pairedt-v2', quantCols, 1);
+        fillSelect('mannwhitney-dv', quantCols);
+        fillSelect('mannwhitney-iv', binaryCategCols);
+        fillSelect('wilcoxon-v1', quantCols);
+        fillSelect('wilcoxon-v2', quantCols, 1);
+        fillSelect('kruskal-dv', quantCols);
+        fillSelect('kruskal-iv', categCols);
+        fillPredictorChips('cronbach-items', quantCols);
+
+        // Phase 8 selectors (RM-ANOVA + multinomial)
+        fillPredictorChips('rmanova-measures', quantCols);
+        const multinomCategCols = categCols.filter(c => new Set(c.categValues).size >= 3);
+        fillSelect('multinom-y', multinomCategCols);
+        refreshMultinomForY();
+    }
+
+    function refreshMultinomForY() {
+        const yCol = document.getElementById('multinom-y').value;
+        const yColumn = yCol ? getColumn(yCol) : null;
+        const refSel = document.getElementById('multinom-reference');
+        refSel.innerHTML = '';
+        if (yColumn && yColumn.type === 'categ') {
+            const levels = Array.from(new Set(yColumn.categValues));
+            levels.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l; opt.textContent = l;
+                refSel.appendChild(opt);
+            });
+        }
+        const others = state.columns.filter(c => c.name !== yCol);
+        fillPredictorChips('multinom-predictors', others);
     }
 
     function refreshLogisticForY() {
@@ -1843,7 +2022,15 @@ footer {
     document.getElementById('run-factor').addEventListener('click', runFactor);
     document.getElementById('run-ancova').addEventListener('click', runAncova);
     document.getElementById('run-factorial').addEventListener('click', runFactorial);
+    document.getElementById('run-pairedt').addEventListener('click', runPairedT);
+    document.getElementById('run-mannwhitney').addEventListener('click', runMannWhitney);
+    document.getElementById('run-wilcoxon').addEventListener('click', runWilcoxon);
+    document.getElementById('run-kruskal').addEventListener('click', runKruskal);
+    document.getElementById('run-cronbach').addEventListener('click', runCronbach);
+    document.getElementById('run-rmanova').addEventListener('click', runRMAnova);
+    document.getElementById('run-multinom').addEventListener('click', runMultinom);
     document.getElementById('logistic-y').addEventListener('change', refreshLogisticForY);
+    document.getElementById('multinom-y').addEventListener('change', refreshMultinomForY);
 
     function runDescriptives() {
         let html = `<div class="result-card">
@@ -3802,6 +3989,1145 @@ result_json = json.dumps(result)
 
     function escapeHtmlForChart(s) { return String(s); }
 
+    // ====================================================================
+    // PHASE 7 — Non-parametric tests + reliability
+    // ====================================================================
+
+    // ---------- Paired t-Test ----------
+    async function runPairedT() {
+        const v1 = document.getElementById('pairedt-v1').value;
+        const v2 = document.getElementById('pairedt-v2').value;
+        const errEl = document.getElementById('pairedt-error');
+        errEl.textContent = '';
+        if (!v1 || !v2) return errEl.textContent = 'Pick both variables.';
+        if (v1 === v2) return errEl.textContent = 'Variables must be different.';
+        const ds = buildPyDataset([v1, v2]);
+        if (ds.n < 3) return errEl.textContent = `After dropping rows with missing values in either variable, only ${ds.n} rows remain.`;
+
+        await runWithPyodide('pairedt', 'pairedt-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('col1', v1);
+            pyodide.globals.set('col2', v2);
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+import scipy.stats as stats
+from scipy.stats import t as t_dist
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+df[col1] = pd.to_numeric(df[col1], errors='coerce')
+df[col2] = pd.to_numeric(df[col2], errors='coerce')
+df = df.dropna(subset=[col1, col2])
+
+x1 = df[col1].values
+x2 = df[col2].values
+diff = x1 - x2
+n = int(len(diff))
+mean_diff = float(diff.mean())
+sd_diff = float(diff.std(ddof=1)) if n > 1 else 0.0
+se_diff = sd_diff / (n ** 0.5) if n else 0.0
+df_t = n - 1
+
+t_stat, p = stats.ttest_rel(x1, x2)
+dz = mean_diff / sd_diff if sd_diff else 0.0
+t_crit = float(t_dist.ppf(0.975, df_t)) if df_t > 0 else 1.96
+ci_lo = mean_diff - t_crit * se_diff
+ci_hi = mean_diff + t_crit * se_diff
+
+# Shapiro-Wilk on differences (paired t-test assumes normal differences, not normal raw values)
+sw_p = None; sw_W = None
+if n >= 3 and n <= 5000:
+    sw = stats.shapiro(diff)
+    sw_W = float(sw.statistic); sw_p = float(sw.pvalue)
+
+result = {
+    'col1': col1, 'col2': col2, 'n': n,
+    'mean1': float(x1.mean()), 'sd1': float(x1.std(ddof=1)) if n > 1 else 0.0,
+    'mean2': float(x2.mean()), 'sd2': float(x2.std(ddof=1)) if n > 1 else 0.0,
+    'mean_diff': mean_diff, 'sd_diff': sd_diff, 'se_diff': se_diff,
+    'ci_lo': float(ci_lo), 'ci_hi': float(ci_hi),
+    't': float(t_stat), 'df': df_t, 'p': float(p), 'dz': dz,
+    'diff_values': [float(d) for d in diff.tolist()],
+    'sw_W': sw_W, 'sw_p': sw_p
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderPairedT(result);
+        });
+    }
+
+    function renderPairedT(res) {
+        const sig = res.p < 0.05;
+        const dLabel = Math.abs(res.dz) < 0.2 ? 'negligible' : Math.abs(res.dz) < 0.5 ? 'small' : Math.abs(res.dz) < 0.8 ? 'medium' : 'large';
+        const direction = res.mean_diff > 0 ? 'higher' : 'lower';
+        const swViolated = res.sw_p !== null && res.sw_p < 0.05;
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Paired-Samples t-Test</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Comparing <strong>${escapeHtml(res.col1)}</strong> vs. <strong>${escapeHtml(res.col2)}</strong> (paired by row). N = ${res.n}.</p>
+
+            <table class="stats-table"><thead><tr>
+                <th>Variable</th><th class="num">Mean</th><th class="num">SD</th>
+            </tr></thead><tbody>
+                <tr><td><strong>${escapeHtml(res.col1)}</strong></td><td class="num">${fmt(res.mean1)}</td><td class="num">${fmt(res.sd1)}</td></tr>
+                <tr><td><strong>${escapeHtml(res.col2)}</strong></td><td class="num">${fmt(res.mean2)}</td><td class="num">${fmt(res.sd2)}</td></tr>
+                <tr><td><strong>Difference (${escapeHtml(res.col1)} &minus; ${escapeHtml(res.col2)})</strong></td><td class="num"><strong>${fmt(res.mean_diff)}</strong></td><td class="num">${fmt(res.sd_diff)}</td></tr>
+            </tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Test result</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>t(${res.df})</td><td class="num">${fmt(res.t)}</td></tr>
+                <tr><td>p-value</td><td class="num">${fmtP(res.p)}</td></tr>
+                <tr><td>95% CI for mean difference</td><td class="num">[${fmt(res.ci_lo)}, ${fmt(res.ci_hi)}]</td></tr>
+                <tr><td>Cohen's d<sub>z</sub> (paired)</td><td class="num">${fmt(res.dz)} (${dLabel})</td></tr>
+            </tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Assumption check</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Check</th><th class="num">W</th><th class="num">p</th><th>Status</th><th>If violated</th>
+            </tr></thead><tbody>
+                <tr>
+                    <td>Normality of differences &mdash; Shapiro-Wilk</td>
+                    <td class="num">${fmt(res.sw_W)}</td>
+                    <td class="num">${res.sw_p === null ? '&mdash;' : fmtP(res.sw_p)}</td>
+                    <td>${swViolated ? '<span class="sig-no">&#9888; violated</span>' : '<span class="sig-yes">&#10003; OK</span>'}</td>
+                    <td style="font-size:12px;color:#b0b8c0;">If violated and N is small, prefer Wilcoxon signed-rank instead.</td>
+                </tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> ${escapeHtml(res.col1)} (M = ${fmt(res.mean1)}) is ${direction} than ${escapeHtml(res.col2)} (M = ${fmt(res.mean2)}) by an average of ${fmt(Math.abs(res.mean_diff))} units. The difference is <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, t(${res.df}) = ${fmt(res.t)}, p ${apaP(res.p)}. The 95% CI for the mean difference [${fmt(res.ci_lo)}, ${fmt(res.ci_hi)}] ${(res.ci_lo <= 0 && res.ci_hi >= 0) ? 'includes 0' : 'excludes 0'}. Effect size (Cohen's d<sub>z</sub>) is ${dLabel} at ${fmt(res.dz)}.
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Distribution of differences</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">Histogram of (${escapeHtml(res.col1)} &minus; ${escapeHtml(res.col2)})</div><canvas id="pairedt-diff-hist"></canvas></div>
+            </div>
+            ${apaButton('pairedt', res, {})}
+        </div>`;
+        showResults(html);
+        drawHistogram(document.getElementById('pairedt-diff-hist'), res.diff_values, { xLabel: 'Difference' });
+    }
+
+    // ---------- Mann-Whitney U ----------
+    async function runMannWhitney() {
+        const dv = document.getElementById('mannwhitney-dv').value;
+        const iv = document.getElementById('mannwhitney-iv').value;
+        const errEl = document.getElementById('mannwhitney-error');
+        errEl.textContent = '';
+        if (!dv || !iv) return errEl.textContent = 'Pick both variables.';
+        const ivCol = getColumn(iv);
+        if (!ivCol || ivCol.type !== 'categ') return errEl.textContent = 'IV must be categorical.';
+        const levels = Array.from(new Set(ivCol.categValues));
+        if (levels.length !== 2) return errEl.textContent = `IV must have exactly 2 levels (yours has ${levels.length}). Try Kruskal-Wallis for 3+ groups.`;
+
+        const ds = buildPyDataset([dv, iv]);
+        if (ds.n < 4) return errEl.textContent = `After dropping missing values, only ${ds.n} rows remain.`;
+
+        await runWithPyodide('mannwhitney', 'mannwhitney-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('dv_col', dv);
+            pyodide.globals.set('iv_col', iv);
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+import scipy.stats as stats
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+df[dv_col] = pd.to_numeric(df[dv_col], errors='coerce')
+df = df.dropna(subset=[dv_col, iv_col])
+levels = sorted(df[iv_col].astype(str).unique())
+g1 = df[df[iv_col].astype(str) == levels[0]][dv_col].values
+g2 = df[df[iv_col].astype(str) == levels[1]][dv_col].values
+n1 = int(len(g1)); n2 = int(len(g2))
+
+res = stats.mannwhitneyu(g1, g2, alternative='two-sided')
+U = float(res.statistic); p = float(res.pvalue)
+
+# Z approximation (with tie correction)
+mu_U = n1 * n2 / 2
+sigma_U_no_ties = ((n1 * n2 * (n1 + n2 + 1)) / 12) ** 0.5
+all_data = np.concatenate([g1, g2])
+ties_series = pd.Series(all_data).value_counts()
+T_correction = sum(t**3 - t for t in ties_series[ties_series > 1].values)
+N = n1 + n2
+sigma_U_sq = (n1 * n2 / (12 * N * (N - 1))) * (N**3 - N - T_correction)
+sigma_U = sigma_U_sq ** 0.5 if sigma_U_sq > 0 else sigma_U_no_ties
+z = (U - mu_U) / sigma_U if sigma_U else 0.0
+
+# Rank-biserial r effect size: r = 1 - 2U/(n1*n2)
+r_rb = 1.0 - 2.0 * U / (n1 * n2)
+
+result = {
+    'dv': dv_col, 'iv': iv_col,
+    'levels': levels,
+    'n1': n1, 'n2': n2, 'n': n1 + n2,
+    'median1': float(np.median(g1)), 'median2': float(np.median(g2)),
+    'mean1': float(g1.mean()), 'mean2': float(g2.mean()),
+    'mean_rank1': float(stats.rankdata(np.concatenate([g1, g2]))[:n1].mean()),
+    'mean_rank2': float(stats.rankdata(np.concatenate([g1, g2]))[n1:].mean()),
+    'U': U, 'z': float(z), 'p': p, 'r': float(r_rb),
+    'g1_values': [float(v) for v in g1.tolist()],
+    'g2_values': [float(v) for v in g2.tolist()]
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderMannWhitney(result);
+        });
+    }
+
+    function renderMannWhitney(res) {
+        const sig = res.p < 0.05;
+        const r_abs = Math.abs(res.r);
+        const rLabel = r_abs < 0.1 ? 'negligible' : r_abs < 0.3 ? 'small' : r_abs < 0.5 ? 'medium' : 'large';
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Mann-Whitney U Test</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Non-parametric comparison of <strong>${escapeHtml(res.dv)}</strong> between <strong>${escapeHtml(res.levels[0])}</strong> (n=${res.n1}) and <strong>${escapeHtml(res.levels[1])}</strong> (n=${res.n2}).</p>
+
+            <table class="stats-table"><thead><tr>
+                <th>Group</th><th class="num">n</th><th class="num">Median</th><th class="num">Mean</th><th class="num">Mean rank</th>
+            </tr></thead><tbody>
+                <tr><td><strong>${escapeHtml(res.levels[0])}</strong></td><td class="num">${res.n1}</td><td class="num">${fmt(res.median1)}</td><td class="num">${fmt(res.mean1)}</td><td class="num">${fmt(res.mean_rank1)}</td></tr>
+                <tr><td><strong>${escapeHtml(res.levels[1])}</strong></td><td class="num">${res.n2}</td><td class="num">${fmt(res.median2)}</td><td class="num">${fmt(res.mean2)}</td><td class="num">${fmt(res.mean_rank2)}</td></tr>
+            </tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Test result</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>U statistic</td><td class="num">${fmt(res.U)}</td></tr>
+                <tr><td>z (large-sample approximation, tie-corrected)</td><td class="num">${fmt(res.z)}</td></tr>
+                <tr><td>p-value (two-sided)</td><td class="num">${fmtP(res.p)}</td></tr>
+                <tr><td>Rank-biserial r</td><td class="num">${fmt(res.r)} (${rLabel})</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The distribution of ${escapeHtml(res.dv)} ${sig ? '<span class="sig-yes">differs significantly</span>' : '<span class="sig-no">does not differ significantly</span>'} between ${escapeHtml(res.levels[0])} (median = ${fmt(res.median1)}) and ${escapeHtml(res.levels[1])} (median = ${fmt(res.median2)}), U = ${fmt(res.U)}, z = ${fmt(res.z)}, p ${apaP(res.p)}. Rank-biserial r = ${fmt(res.r)} indicates a ${rLabel} effect. Use this test instead of the t-test when normality is violated or the data are ordinal.
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Distribution by group</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">Box plot</div><canvas id="mw-box"></canvas></div>
+            </div>
+            ${apaButton('mannwhitney', res, {})}
+        </div>`;
+        showResults(html);
+        drawBoxPlot(document.getElementById('mw-box'), [
+            { label: res.levels[0], values: res.g1_values },
+            { label: res.levels[1], values: res.g2_values }
+        ], { yLabel: res.dv });
+    }
+
+    // ---------- Wilcoxon Signed-Rank ----------
+    async function runWilcoxon() {
+        const v1 = document.getElementById('wilcoxon-v1').value;
+        const v2 = document.getElementById('wilcoxon-v2').value;
+        const errEl = document.getElementById('wilcoxon-error');
+        errEl.textContent = '';
+        if (!v1 || !v2) return errEl.textContent = 'Pick both variables.';
+        if (v1 === v2) return errEl.textContent = 'Variables must be different.';
+        const ds = buildPyDataset([v1, v2]);
+        if (ds.n < 5) return errEl.textContent = `After dropping missing values, only ${ds.n} rows remain.`;
+
+        await runWithPyodide('wilcoxon', 'wilcoxon-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('col1', v1);
+            pyodide.globals.set('col2', v2);
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+import scipy.stats as stats
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+df[col1] = pd.to_numeric(df[col1], errors='coerce')
+df[col2] = pd.to_numeric(df[col2], errors='coerce')
+df = df.dropna(subset=[col1, col2])
+
+x1 = df[col1].values
+x2 = df[col2].values
+diff = x1 - x2
+n = int(len(diff))
+nz = int((diff != 0).sum())
+
+res = stats.wilcoxon(x1, x2, alternative='two-sided', zero_method='wilcox')
+W = float(res.statistic); p = float(res.pvalue)
+
+# z approximation (excluding zeros)
+mu_W = nz * (nz + 1) / 4
+sigma_W = (nz * (nz + 1) * (2 * nz + 1) / 24) ** 0.5 if nz > 0 else 0.0
+z = (W - mu_W) / sigma_W if sigma_W else 0.0
+
+# Rank-biserial: r = z / sqrt(N) (matched-pairs version)
+r_rb = z / (nz ** 0.5) if nz > 0 else 0.0
+
+result = {
+    'col1': col1, 'col2': col2, 'n': n, 'nz': nz,
+    'median1': float(np.median(x1)), 'median2': float(np.median(x2)),
+    'mean1': float(x1.mean()), 'mean2': float(x2.mean()),
+    'median_diff': float(np.median(diff)),
+    'W': W, 'z': float(z), 'p': p, 'r': float(r_rb),
+    'diff_values': [float(d) for d in diff.tolist()]
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderWilcoxon(result);
+        });
+    }
+
+    function renderWilcoxon(res) {
+        const sig = res.p < 0.05;
+        const r_abs = Math.abs(res.r);
+        const rLabel = r_abs < 0.1 ? 'negligible' : r_abs < 0.3 ? 'small' : r_abs < 0.5 ? 'medium' : 'large';
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Wilcoxon Signed-Rank Test</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Non-parametric paired comparison of <strong>${escapeHtml(res.col1)}</strong> vs. <strong>${escapeHtml(res.col2)}</strong>. N = ${res.n} pairs (${res.nz} non-zero differences).</p>
+
+            <table class="stats-table"><thead><tr>
+                <th>Variable</th><th class="num">Median</th><th class="num">Mean</th>
+            </tr></thead><tbody>
+                <tr><td><strong>${escapeHtml(res.col1)}</strong></td><td class="num">${fmt(res.median1)}</td><td class="num">${fmt(res.mean1)}</td></tr>
+                <tr><td><strong>${escapeHtml(res.col2)}</strong></td><td class="num">${fmt(res.median2)}</td><td class="num">${fmt(res.mean2)}</td></tr>
+                <tr><td><strong>Median difference</strong></td><td class="num"><strong>${fmt(res.median_diff)}</strong></td><td class="num">&mdash;</td></tr>
+            </tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Test result</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>W statistic</td><td class="num">${fmt(res.W)}</td></tr>
+                <tr><td>z (large-sample approximation)</td><td class="num">${fmt(res.z)}</td></tr>
+                <tr><td>p-value (two-sided)</td><td class="num">${fmtP(res.p)}</td></tr>
+                <tr><td>Matched-pairs rank-biserial r</td><td class="num">${fmt(res.r)} (${rLabel})</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The median difference between ${escapeHtml(res.col1)} and ${escapeHtml(res.col2)} is ${fmt(res.median_diff)}. The signed-rank test is <span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, W = ${fmt(res.W)}, z = ${fmt(res.z)}, p ${apaP(res.p)}. Matched-pairs r = ${fmt(res.r)} indicates a ${rLabel} effect. Use Wilcoxon (instead of paired t-test) when the difference scores are non-normal or ordinal.
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Distribution of differences</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">Histogram of (${escapeHtml(res.col1)} &minus; ${escapeHtml(res.col2)})</div><canvas id="wx-diff-hist"></canvas></div>
+            </div>
+            ${apaButton('wilcoxon', res, {})}
+        </div>`;
+        showResults(html);
+        drawHistogram(document.getElementById('wx-diff-hist'), res.diff_values, { xLabel: 'Difference' });
+    }
+
+    // ---------- Kruskal-Wallis ----------
+    async function runKruskal() {
+        const dv = document.getElementById('kruskal-dv').value;
+        const iv = document.getElementById('kruskal-iv').value;
+        const errEl = document.getElementById('kruskal-error');
+        errEl.textContent = '';
+        if (!dv || !iv) return errEl.textContent = 'Pick both variables.';
+        const ivCol = getColumn(iv);
+        if (!ivCol || ivCol.type !== 'categ') return errEl.textContent = 'IV must be categorical.';
+        const levels = Array.from(new Set(ivCol.categValues));
+        if (levels.length < 2) return errEl.textContent = `IV needs at least 2 levels (yours has ${levels.length}).`;
+        const ds = buildPyDataset([dv, iv]);
+        if (ds.n < levels.length * 2) return errEl.textContent = `After dropping missing values, only ${ds.n} rows remain.`;
+
+        await runWithPyodide('kruskal', 'kruskal-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('dv_col', dv);
+            pyodide.globals.set('iv_col', iv);
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+import scipy.stats as stats
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+df[dv_col] = pd.to_numeric(df[dv_col], errors='coerce')
+df = df.dropna(subset=[dv_col, iv_col])
+
+groups = sorted(df[iv_col].astype(str).unique())
+arrays = [df[df[iv_col].astype(str) == g][dv_col].values for g in groups]
+ns = [int(len(a)) for a in arrays]
+N = int(sum(ns))
+
+H, p = stats.kruskal(*arrays)
+df_kw = len(groups) - 1
+# Epsilon-squared effect size
+epsilon2 = float(H / (N - 1)) if N > 1 else None
+# Eta-squared (alternative): (H - k + 1) / (N - k)
+eta2 = float((H - len(groups) + 1) / (N - len(groups))) if N > len(groups) else None
+
+# Per-group descriptives
+group_stats = []
+for g, arr in zip(groups, arrays):
+    group_stats.append({
+        'level': g, 'n': int(len(arr)),
+        'median': float(np.median(arr)),
+        'mean': float(arr.mean()),
+        'q1': float(np.percentile(arr, 25)),
+        'q3': float(np.percentile(arr, 75))
+    })
+
+# Mean ranks for Dunn's
+all_vals = np.concatenate(arrays)
+all_ranks = stats.rankdata(all_vals)
+mean_ranks = []
+idx = 0
+for n in ns:
+    mean_ranks.append(float(all_ranks[idx:idx+n].mean()))
+    idx += n
+
+# Dunn's post-hoc with Bonferroni (only if omnibus is significant or user wants to see)
+ties_ser = pd.Series(all_vals).value_counts()
+T_corr = sum(t**3 - t for t in ties_ser[ties_ser > 1].values)
+sigma_sq = (N * (N + 1) / 12) - T_corr / (12 * (N - 1)) if N > 1 else 0
+posthoc = []
+n_comp = len(groups) * (len(groups) - 1) / 2
+for i in range(len(groups)):
+    for j in range(i + 1, len(groups)):
+        denom = (sigma_sq * (1.0/ns[i] + 1.0/ns[j])) ** 0.5 if sigma_sq > 0 else 1
+        z_dun = (mean_ranks[i] - mean_ranks[j]) / denom if denom else 0
+        p_raw = 2 * (1 - stats.norm.cdf(abs(z_dun)))
+        p_bon = min(p_raw * n_comp, 1.0)
+        posthoc.append({
+            'g1': groups[i], 'g2': groups[j],
+            'mean_rank_diff': mean_ranks[i] - mean_ranks[j],
+            'z': float(z_dun), 'p_raw': float(p_raw), 'p_bon': float(p_bon)
+        })
+
+result = {
+    'dv': dv_col, 'iv': iv_col,
+    'groups': groups, 'group_stats': group_stats, 'mean_ranks': mean_ranks,
+    'n': N, 'k': len(groups),
+    'H': float(H), 'df': df_kw, 'p': float(p),
+    'epsilon2': epsilon2, 'eta2': eta2,
+    'posthoc': posthoc, 'alpha_bonferroni': 0.05 / max(n_comp, 1),
+    'group_values': {g: [float(v) for v in arr.tolist()] for g, arr in zip(groups, arrays)}
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderKruskal(result);
+        });
+    }
+
+    function renderKruskal(res) {
+        const sig = res.p < 0.05;
+        const eps = res.epsilon2 || 0;
+        const epsLabel = eps < 0.04 ? 'negligible' : eps < 0.16 ? 'small' : eps < 0.36 ? 'medium' : 'large';
+
+        let descRows = '';
+        res.group_stats.forEach((g, i) => {
+            descRows += `<tr>
+                <td><strong>${escapeHtml(g.level)}</strong></td>
+                <td class="num">${g.n}</td>
+                <td class="num">${fmt(g.median)}</td>
+                <td class="num">${fmt(g.q1)} &ndash; ${fmt(g.q3)}</td>
+                <td class="num">${fmt(g.mean)}</td>
+                <td class="num">${fmt(res.mean_ranks[i])}</td>
+            </tr>`;
+        });
+
+        let postRows = '';
+        res.posthoc.forEach(pw => {
+            const pSig = pw.p_bon < 0.05;
+            postRows += `<tr>
+                <td><strong>${escapeHtml(pw.g1)}</strong> vs <strong>${escapeHtml(pw.g2)}</strong></td>
+                <td class="num">${fmt(pw.mean_rank_diff)}</td>
+                <td class="num">${fmt(pw.z)}</td>
+                <td class="num">${fmtP(pw.p_raw)}</td>
+                <td class="num">${fmtP(pw.p_bon)}</td>
+                <td><span class="${pSig ? 'sig-yes' : 'sig-no'}">${pSig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Kruskal-Wallis Test</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Non-parametric comparison of <strong>${escapeHtml(res.dv)}</strong> across ${res.k} groups of <strong>${escapeHtml(res.iv)}</strong>. N = ${res.n}.</p>
+
+            <table class="stats-table"><thead><tr>
+                <th>Group</th><th class="num">n</th><th class="num">Median</th><th class="num">Q1 &ndash; Q3</th><th class="num">Mean</th><th class="num">Mean rank</th>
+            </tr></thead><tbody>${descRows}</tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Omnibus test</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>H statistic</td><td class="num">${fmt(res.H)}</td></tr>
+                <tr><td>df</td><td class="num">${res.df}</td></tr>
+                <tr><td>p-value</td><td class="num">${fmtP(res.p)}</td></tr>
+                <tr><td>&epsilon;&sup2; (epsilon-squared)</td><td class="num">${fmt(res.epsilon2)} (${epsLabel})</td></tr>
+                <tr><td>&eta;&sup2; (eta-squared)</td><td class="num">${fmt(res.eta2)}</td></tr>
+            </tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Pairwise comparisons (Dunn's test, Bonferroni-corrected)</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Comparison</th><th class="num">Mean rank diff</th><th class="num">z</th><th class="num">p (raw)</th><th class="num">p (Bonf.)</th><th>Sig.</th>
+            </tr></thead><tbody>${postRows}</tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Bonferroni-corrected &alpha; = ${fmt(res.alpha_bonferroni, 4)} for ${res.posthoc.length} comparison${res.posthoc.length === 1 ? '' : 's'}.</p>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The omnibus Kruskal-Wallis test ${sig ? '<span class="sig-yes">is statistically significant</span>' : '<span class="sig-no">is not statistically significant</span>'}, H(${res.df}) = ${fmt(res.H)}, p ${apaP(res.p)}, &epsilon;&sup2; = ${fmt(res.epsilon2)} (${epsLabel} effect). ${sig ? 'Look at Dunn&rsquo;s pairwise comparisons above to identify which specific groups differ.' : 'No follow-up comparisons are warranted.'} Use this test instead of one-way ANOVA when normality is violated or the DV is ordinal.
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Distribution by group</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">Box plot</div><canvas id="kw-box"></canvas></div>
+            </div>
+            ${apaButton('kruskal', res, {})}
+        </div>`;
+        showResults(html);
+        drawBoxPlot(document.getElementById('kw-box'),
+            res.groups.map(g => ({ label: g, values: res.group_values[g] })),
+            { yLabel: res.dv });
+    }
+
+    // ---------- Cronbach's Alpha ----------
+    async function runCronbach() {
+        const items = Array.from(document.querySelectorAll('#cronbach-items input:checked')).map(i => i.value);
+        const errEl = document.getElementById('cronbach-error');
+        errEl.textContent = '';
+        if (items.length < 3) return errEl.textContent = 'Pick at least 3 items.';
+        const ds = buildPyDataset(items);
+        if (ds.n < 5) return errEl.textContent = `After dropping rows with any missing item, only ${ds.n} rows remain.`;
+
+        await runWithPyodide('cronbach', 'cronbach-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('item_cols', pyodide.toPy(items));
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+from scipy.stats import f as f_dist
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+items = list(item_cols)
+for c in items:
+    df[c] = pd.to_numeric(df[c], errors='coerce')
+df = df.dropna(subset=items)
+
+X = df[items].values
+n = int(X.shape[0])
+k = int(X.shape[1])
+
+item_vars = X.var(axis=0, ddof=1)
+total_scores = X.sum(axis=1)
+total_var = float(total_scores.var(ddof=1))
+
+if total_var == 0 or k < 2:
+    alpha = None
+    ci_lo = None; ci_hi = None
+else:
+    alpha = float((k / (k - 1)) * (1 - item_vars.sum() / total_var))
+    # Feldt's 95% CI
+    df1 = n - 1
+    df2 = (n - 1) * (k - 1)
+    F_lower = float(f_dist.ppf(0.025, df1, df2))
+    F_upper = float(f_dist.ppf(0.975, df1, df2))
+    ci_lo = float(1 - (1 - alpha) * F_upper)
+    ci_hi = float(1 - (1 - alpha) * F_lower)
+
+# Per-item statistics
+item_stats = []
+for i in range(k):
+    item_mean = float(X[:, i].mean())
+    item_sd = float(X[:, i].std(ddof=1)) if n > 1 else 0.0
+    other = np.delete(X, i, axis=1)
+    other_total = other.sum(axis=1)
+    item_total_r = float(np.corrcoef(X[:, i], other_total)[0, 1]) if (X[:, i].std() > 0 and other_total.std() > 0) else None
+    a_minus = None
+    if k > 2:
+        other_vars = other.var(axis=0, ddof=1)
+        tot_var_other = float(other_total.var(ddof=1))
+        if tot_var_other > 0:
+            a_minus = float(((k - 1) / (k - 2)) * (1 - other_vars.sum() / tot_var_other))
+    item_stats.append({
+        'item': items[i],
+        'mean': item_mean, 'sd': item_sd,
+        'item_total_r': item_total_r,
+        'alpha_if_deleted': a_minus
+    })
+
+# Inter-item correlation matrix
+corr = np.corrcoef(X.T) if X.shape[0] > 1 else np.eye(k)
+mean_inter_corr = float(corr[np.triu_indices(k, 1)].mean()) if k > 1 else None
+
+result = {
+    'items': items, 'n': n, 'k': k,
+    'alpha': alpha,
+    'ci_lo': ci_lo, 'ci_hi': ci_hi,
+    'item_stats': item_stats,
+    'total_mean': float(total_scores.mean()),
+    'total_sd': float(total_scores.std(ddof=1)) if n > 1 else 0.0,
+    'mean_inter_item_r': mean_inter_corr
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderCronbach(result);
+        });
+    }
+
+    function renderCronbach(res) {
+        const a = res.alpha;
+        const aLabel = a === null ? '' : a < 0.5 ? 'unacceptable' : a < 0.6 ? 'poor' : a < 0.7 ? 'questionable' : a < 0.8 ? 'acceptable' : a < 0.9 ? 'good' : 'excellent';
+        let itemRows = '';
+        res.item_stats.forEach(s => {
+            const lowR = s.item_total_r !== null && s.item_total_r < 0.3;
+            const flag = s.alpha_if_deleted !== null && a !== null && s.alpha_if_deleted > a;
+            itemRows += `<tr>
+                <td><strong>${escapeHtml(s.item)}</strong></td>
+                <td class="num">${fmt(s.mean)}</td>
+                <td class="num">${fmt(s.sd)}</td>
+                <td class="num ${lowR ? 'sig-no' : ''}">${s.item_total_r === null ? '&mdash;' : fmt(s.item_total_r)}</td>
+                <td class="num ${flag ? 'sig-no' : ''}">${s.alpha_if_deleted === null ? '&mdash;' : fmt(s.alpha_if_deleted)}${flag ? ' &#9888;' : ''}</td>
+            </tr>`;
+        });
+        const flaggedItems = res.item_stats.filter(s => s.alpha_if_deleted !== null && a !== null && s.alpha_if_deleted > a);
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Cronbach's &alpha; (Internal-Consistency Reliability)</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Reliability of <strong>${res.k}</strong> items. N = ${res.n}.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">Scale reliability</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>Cronbach's &alpha;</td><td class="num"><strong>${fmt(a)}</strong> (${aLabel})</td></tr>
+                <tr><td>95% confidence interval (Feldt)</td><td class="num">[${fmt(res.ci_lo)}, ${fmt(res.ci_hi)}]</td></tr>
+                <tr><td>Number of items (k)</td><td class="num">${res.k}</td></tr>
+                <tr><td>Total score: M (SD)</td><td class="num">${fmt(res.total_mean)} (${fmt(res.total_sd)})</td></tr>
+                <tr><td>Mean inter-item correlation</td><td class="num">${fmt(res.mean_inter_item_r)}</td></tr>
+            </tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Conventions: &alpha; &ge; .70 acceptable for research scales, &ge; .80 good, &ge; .90 excellent. &alpha; rises with more items, so very long scales may show inflated reliability.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Per-item statistics</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Item</th><th class="num">Mean</th><th class="num">SD</th><th class="num">Item-total r (corrected)</th><th class="num">&alpha; if deleted</th>
+            </tr></thead><tbody>${itemRows}</tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Item-total correlation &lt; .30 suggests the item may not belong to the scale (highlighted). "&alpha; if deleted" higher than the overall &alpha; suggests removing that item would improve reliability (flagged with &#9888;).</p>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The scale's internal consistency is <strong>${aLabel}</strong>, &alpha; = ${fmt(a)}, 95% CI [${fmt(res.ci_lo)}, ${fmt(res.ci_hi)}]. ${flaggedItems.length === 0 ? 'No item, if removed, would meaningfully improve reliability &mdash; the scale appears coherent as is.' : `Removing ${flaggedItems.map(s => '<em>' + escapeHtml(s.item) + '</em>').join(', ')} would raise &alpha; &mdash; consider whether ${flaggedItems.length === 1 ? 'this item belongs' : 'these items belong'} on the scale conceptually.`}
+            </div>
+
+            ${apaButton('cronbach', res, {})}
+        </div>`;
+        showResults(html);
+    }
+
+    // ====================================================================
+    // PHASE 8 — Repeated-Measures ANOVA + Multinomial Logistic
+    // ====================================================================
+
+    // ---------- Repeated-Measures ANOVA ----------
+    async function runRMAnova() {
+        const measures = Array.from(document.querySelectorAll('#rmanova-measures input:checked')).map(i => i.value);
+        const errEl = document.getElementById('rmanova-error');
+        errEl.textContent = '';
+        if (measures.length < 2) return errEl.textContent = 'Pick at least 2 repeated-measure columns.';
+        const ds = buildPyDataset(measures);
+        if (ds.n < 3) return errEl.textContent = `After dropping rows with any missing measurement, only ${ds.n} subjects remain.`;
+
+        await runWithPyodide('rmanova', 'rmanova-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('measure_cols', pyodide.toPy(measures));
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+from scipy.stats import f as f_dist, chi2 as chi2_dist, t as t_dist
+
+measures = list(measure_cols)
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+for c in measures:
+    df[c] = pd.to_numeric(df[c], errors='coerce')
+df = df.dropna(subset=measures).reset_index(drop=True)
+
+n = int(len(df))
+k = int(len(measures))
+X = df[measures].values  # n x k
+
+subject_means = X.mean(axis=1)            # n
+treatment_means = X.mean(axis=0)          # k
+grand_mean = float(X.mean())
+
+ss_total = float(((X - grand_mean) ** 2).sum())
+ss_subjects = float(k * ((subject_means - grand_mean) ** 2).sum())
+ss_treatment = float(n * ((treatment_means - grand_mean) ** 2).sum())
+ss_within = ss_total - ss_subjects
+ss_error = ss_within - ss_treatment
+
+df_treatment = k - 1
+df_error = (k - 1) * (n - 1)
+df_subjects = n - 1
+ms_treatment = ss_treatment / df_treatment if df_treatment else 0
+ms_error = ss_error / df_error if df_error else 0
+F = ms_treatment / ms_error if ms_error else 0
+p = float(1 - f_dist.cdf(F, df_treatment, df_error)) if df_error > 0 else None
+
+eta2 = ss_treatment / ss_total if ss_total else None
+partial_eta2 = ss_treatment / (ss_treatment + ss_error) if (ss_treatment + ss_error) else None
+
+# Mauchly's test of sphericity (only meaningful for k >= 3)
+mauchly_W = None; mauchly_chi2 = None; mauchly_df = None; mauchly_p = None
+gg_epsilon = None; hf_epsilon = None; lb_epsilon = None
+if k >= 3:
+    # Sample covariance matrix of repeated measures
+    S = np.cov(X.T, ddof=1)  # k x k
+    # Construct contrast matrix C (k-1 x k) of orthonormal contrasts
+    C = np.zeros((k - 1, k))
+    for i in range(k - 1):
+        for j in range(k):
+            if j <= i: C[i, j] = 1.0 / (i + 1)
+            elif j == i + 1: C[i, j] = -1.0
+    # Orthonormalize
+    Q, _ = np.linalg.qr(C.T)
+    C_on = Q.T  # (k-1) x k
+    M = C_on @ S @ C_on.T  # (k-1) x (k-1)
+    eigs = np.linalg.eigvalsh(M)
+    eigs = np.maximum(eigs, 1e-15)
+    det_M = float(np.prod(eigs))
+    trace_M = float(np.sum(eigs))
+    # Mauchly's W = det(M) / ((trace(M) / (k-1))^(k-1))
+    mean_eig = trace_M / (k - 1)
+    mauchly_W = float(det_M / (mean_eig ** (k - 1))) if mean_eig > 0 else None
+    if mauchly_W is not None and mauchly_W > 0:
+        # Mauchly chi-square approximation
+        d = 1 - (2 * (k - 1) ** 2 + (k - 1) + 2) / (6 * (k - 1) * (n - 1))
+        mauchly_chi2 = float(-(n - 1) * d * np.log(mauchly_W))
+        mauchly_df = int(((k - 1) * k / 2) - 1)
+        mauchly_p = float(1 - chi2_dist.cdf(mauchly_chi2, mauchly_df)) if mauchly_df > 0 else None
+    # Greenhouse-Geisser epsilon
+    sum_eigs = float(np.sum(eigs))
+    sum_eigs_sq = float(np.sum(eigs ** 2))
+    gg_epsilon = float((sum_eigs ** 2) / ((k - 1) * sum_eigs_sq)) if sum_eigs_sq else None
+    # Huynh-Feldt epsilon (corrected)
+    if gg_epsilon is not None:
+        num = n * (k - 1) * gg_epsilon - 2
+        den = (k - 1) * ((n - 1) - (k - 1) * gg_epsilon)
+        hf_raw = num / den if den else gg_epsilon
+        hf_epsilon = float(min(hf_raw, 1.0))
+    # Lower-bound epsilon
+    lb_epsilon = float(1.0 / (k - 1))
+
+# Corrected p-values
+def corrected_p(eps):
+    if eps is None or df_error == 0: return None
+    df1 = df_treatment * eps
+    df2 = df_error * eps
+    return float(1 - f_dist.cdf(F, df1, df2))
+gg_p = corrected_p(gg_epsilon)
+hf_p = corrected_p(hf_epsilon)
+
+# Per-timepoint descriptives
+tp_stats = []
+for i, m in enumerate(measures):
+    col = X[:, i]
+    tp_stats.append({
+        'measure': m, 'n': n,
+        'mean': float(col.mean()),
+        'sd': float(col.std(ddof=1)) if n > 1 else 0.0,
+        'sem': float(col.std(ddof=1) / (n ** 0.5)) if n > 1 else 0.0
+    })
+
+# Pairwise comparisons (paired t-tests, Bonferroni-corrected)
+pairs = []
+n_comp = k * (k - 1) / 2
+alpha_bon = 0.05 / max(n_comp, 1)
+for i in range(k):
+    for j in range(i + 1, k):
+        diff = X[:, i] - X[:, j]
+        m_diff = float(diff.mean())
+        sd_diff = float(diff.std(ddof=1)) if n > 1 else 0.0
+        se_diff = sd_diff / (n ** 0.5) if n > 0 else 0.0
+        t_stat = m_diff / se_diff if se_diff else 0.0
+        df_p = n - 1
+        p_raw = float(2 * (1 - t_dist.cdf(abs(t_stat), df_p))) if df_p > 0 else None
+        p_bon = float(min((p_raw or 1) * n_comp, 1.0))
+        d_z = m_diff / sd_diff if sd_diff else 0.0
+        pairs.append({
+            'm1': measures[i], 'm2': measures[j],
+            'mean_diff': m_diff, 'sd_diff': sd_diff,
+            't': t_stat, 'df': df_p,
+            'p_raw': p_raw, 'p_bon': p_bon, 'd_z': d_z
+        })
+
+result = {
+    'measures': measures, 'n': n, 'k': k,
+    'tp_stats': tp_stats,
+    'ss_treatment': ss_treatment, 'ss_error': ss_error, 'ss_subjects': ss_subjects,
+    'df_treatment': df_treatment, 'df_error': df_error, 'df_subjects': df_subjects,
+    'ms_treatment': ms_treatment, 'ms_error': ms_error,
+    'F': float(F), 'p': p,
+    'eta2': eta2, 'partial_eta2': partial_eta2,
+    'mauchly_W': mauchly_W, 'mauchly_chi2': mauchly_chi2, 'mauchly_df': mauchly_df, 'mauchly_p': mauchly_p,
+    'gg_epsilon': gg_epsilon, 'hf_epsilon': hf_epsilon, 'lb_epsilon': lb_epsilon,
+    'gg_p': gg_p, 'hf_p': hf_p,
+    'pairs': pairs, 'alpha_bonferroni': alpha_bon,
+    'subject_means': [float(v) for v in subject_means.tolist()]
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderRMAnova(result);
+        });
+    }
+
+    function renderRMAnova(res) {
+        const sig = res.p !== null && res.p < 0.05;
+        const sphericityViolated = res.mauchly_p !== null && res.mauchly_p < 0.05;
+        const eta2 = res.partial_eta2 || 0;
+        const etaLabel = eta2 < 0.01 ? 'negligible' : eta2 < 0.06 ? 'small' : eta2 < 0.14 ? 'medium' : 'large';
+
+        let tpRows = '';
+        res.tp_stats.forEach(t => {
+            tpRows += `<tr><td><strong>${escapeHtml(t.measure)}</strong></td><td class="num">${t.n}</td><td class="num">${fmt(t.mean)}</td><td class="num">${fmt(t.sd)}</td><td class="num">${fmt(t.sem)}</td></tr>`;
+        });
+
+        let pairRows = '';
+        res.pairs.forEach(p => {
+            const pSig = p.p_bon < 0.05;
+            pairRows += `<tr>
+                <td><strong>${escapeHtml(p.m1)}</strong> vs <strong>${escapeHtml(p.m2)}</strong></td>
+                <td class="num">${fmt(p.mean_diff)}</td>
+                <td class="num">${fmt(p.t)}</td>
+                <td class="num">${p.df}</td>
+                <td class="num">${fmtP(p.p_raw)}</td>
+                <td class="num">${fmtP(p.p_bon)}</td>
+                <td class="num">${fmt(p.d_z)}</td>
+                <td><span class="${pSig ? 'sig-yes' : 'sig-no'}">${pSig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+
+        const ggRow = res.k >= 3 ? `<tr><td>Greenhouse-Geisser correction</td><td class="num">&epsilon; = ${fmt(res.gg_epsilon)}</td><td class="num">F(${fmt(res.df_treatment * res.gg_epsilon, 2)}, ${fmt(res.df_error * res.gg_epsilon, 2)}) = ${fmt(res.F)}</td><td class="num">p ${apaP(res.gg_p)}</td></tr>` : '';
+        const hfRow = res.k >= 3 ? `<tr><td>Huynh-Feldt correction</td><td class="num">&epsilon; = ${fmt(res.hf_epsilon)}</td><td class="num">F(${fmt(res.df_treatment * res.hf_epsilon, 2)}, ${fmt(res.df_error * res.hf_epsilon, 2)}) = ${fmt(res.F)}</td><td class="num">p ${apaP(res.hf_p)}</td></tr>` : '';
+        const useGG = sphericityViolated && res.gg_epsilon !== null && res.gg_epsilon < 0.75;
+        const useHF = sphericityViolated && res.gg_epsilon !== null && res.gg_epsilon >= 0.75;
+
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Repeated-Measures ANOVA</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Within-subjects comparison across <strong>${res.k}</strong> repeated measurements: ${res.measures.map(escapeHtml).join(' &rarr; ')}. N = ${res.n} subjects.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">Per-timepoint descriptives</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Timepoint</th><th class="num">n</th><th class="num">Mean</th><th class="num">SD</th><th class="num">SEM</th>
+            </tr></thead><tbody>${tpRows}</tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">ANOVA table</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Source</th><th class="num">SS</th><th class="num">df</th><th class="num">MS</th><th class="num">F</th><th class="num">p</th>
+            </tr></thead><tbody>
+                <tr><td><strong>Time (within-subjects)</strong></td><td class="num">${fmt(res.ss_treatment)}</td><td class="num">${res.df_treatment}</td><td class="num">${fmt(res.ms_treatment)}</td><td class="num"><strong>${fmt(res.F)}</strong></td><td class="num"><strong>${fmtP(res.p)}</strong></td></tr>
+                <tr><td>Subjects</td><td class="num">${fmt(res.ss_subjects)}</td><td class="num">${res.df_subjects}</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+                <tr><td>Error (within)</td><td class="num">${fmt(res.ss_error)}</td><td class="num">${res.df_error}</td><td class="num">${fmt(res.ms_error)}</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+            </tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Effect size: partial &eta;&sup2; = ${fmt(res.partial_eta2)} (${etaLabel}); &eta;&sup2; = ${fmt(res.eta2)}.</p>
+
+            ${res.k >= 3 ? `
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Sphericity assumption (Mauchly's test)</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>Mauchly's W</td><td class="num">${fmt(res.mauchly_W)}</td><td class="num">&chi;&sup2;(${res.mauchly_df}) = ${fmt(res.mauchly_chi2)}</td><td class="num">p ${apaP(res.mauchly_p)}</td><td>${sphericityViolated ? '<span class="sig-no">&#9888; violated</span>' : '<span class="sig-yes">&#10003; OK</span>'}</td></tr>
+            </tbody></table>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">Sphericity-corrected F-tests</h4>
+            <table class="stats-table"><tbody>
+                ${ggRow}
+                ${hfRow}
+            </tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">${sphericityViolated ? `Sphericity is violated &mdash; report the ${useGG ? '<strong>Greenhouse-Geisser</strong> (use when &epsilon; &lt; .75)' : '<strong>Huynh-Feldt</strong> (use when &epsilon; &ge; .75)'} corrected p-value above.` : 'Sphericity holds &mdash; report the uncorrected F-test.'}</p>
+            ` : '<p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Sphericity check is not applicable for k = 2 measurements (always satisfied).</p>'}
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Pairwise comparisons (paired t-tests, Bonferroni-corrected)</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead><tr>
+                <th>Comparison</th><th class="num">Mean diff</th><th class="num">t</th><th class="num">df</th><th class="num">p (raw)</th><th class="num">p (Bonf.)</th><th class="num">d<sub>z</sub></th><th>Sig.</th>
+            </tr></thead><tbody>${pairRows}</tbody></table>
+            </div>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Bonferroni-corrected &alpha; = ${fmt(res.alpha_bonferroni, 4)} for ${res.pairs.length} comparison${res.pairs.length === 1 ? '' : 's'}.</p>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The repeated-measures ANOVA shows that ${escapeHtml(res.measures.join(' / '))} ${sig ? '<span class="sig-yes">differ significantly</span>' : '<span class="sig-no">do not differ significantly</span>'} across timepoints, F(${res.df_treatment}, ${res.df_error}) = ${fmt(res.F)}, p ${apaP(res.p)}, partial &eta;&sup2; = ${fmt(res.partial_eta2)} (${etaLabel} effect). ${sphericityViolated ? `<span class="sig-no">⚠ Sphericity was violated</span> &mdash; the corrected p-value (${useGG ? 'Greenhouse-Geisser' : 'Huynh-Feldt'}) is the one to report. ` : ''}${sig ? 'Look at the Bonferroni-corrected pairwise comparisons above to see which specific timepoints differ.' : ''}
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Profile plot</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">Mean &plusmn; SEM at each timepoint</div><canvas id="rmanova-profile"></canvas></div>
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing measurement value. Each row is treated as one subject; columns are treated as time-ordered repeated measurements.</p>
+            ${apaButton('rmanova', res, {})}
+        </div>`;
+        showResults(html);
+        drawProfilePlot(document.getElementById('rmanova-profile'), res);
+    }
+
+    function drawProfilePlot(canvas, res) {
+        const s = chartSetup(canvas, 320, { l: 60, r: 16, t: 14, b: 60 });
+        if (!s) return;
+        const means = res.tp_stats.map(t => t.mean);
+        const sems = res.tp_stats.map(t => t.sem);
+        const yMin = Math.min(...means.map((m, i) => m - 2 * sems[i]));
+        const yMax = Math.max(...means.map((m, i) => m + 2 * sems[i]));
+        const ypad = (yMax - yMin) * 0.1 || 1;
+        drawAxes(s, 0, res.k, yMin - ypad, yMax + ypad, '', 'Mean', true);
+        const { ctx, pad, innerW, innerH, h } = s;
+        const slot = innerW / res.k;
+        // x labels
+        ctx.fillStyle = ChartColors.text;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        res.tp_stats.forEach((t, i) => {
+            const cx = pad.l + i * slot + slot / 2;
+            const lab = String(t.measure).length > 14 ? String(t.measure).slice(0, 13) + '…' : String(t.measure);
+            ctx.save();
+            ctx.translate(cx, h - pad.b + 6);
+            if (res.k > 4) ctx.rotate(-Math.PI / 8);
+            ctx.fillText(lab, 0, 0);
+            ctx.restore();
+        });
+        const yRange = yMax + ypad - (yMin - ypad);
+        const yLow = yMin - ypad;
+        // line
+        ctx.strokeStyle = ChartColors.primary; ctx.lineWidth = 2;
+        ctx.beginPath();
+        means.forEach((m, i) => {
+            const cx = pad.l + i * slot + slot / 2;
+            const cy = h - pad.b - ((m - yLow) / yRange) * innerH;
+            if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+        });
+        ctx.stroke();
+        // error bars + points
+        means.forEach((m, i) => {
+            const cx = pad.l + i * slot + slot / 2;
+            const cy = h - pad.b - ((m - yLow) / yRange) * innerH;
+            const yHi = h - pad.b - ((m + sems[i] - yLow) / yRange) * innerH;
+            const yLo2 = h - pad.b - ((m - sems[i] - yLow) / yRange) * innerH;
+            ctx.strokeStyle = ChartColors.primary; ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(cx, yHi); ctx.lineTo(cx, yLo2);
+            ctx.moveTo(cx - 6, yHi); ctx.lineTo(cx + 6, yHi);
+            ctx.moveTo(cx - 6, yLo2); ctx.lineTo(cx + 6, yLo2);
+            ctx.stroke();
+            ctx.fillStyle = ChartColors.primary;
+            ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
+        });
+    }
+
+    // ---------- Multinomial Logistic Regression ----------
+    async function runMultinom() {
+        const yCol = document.getElementById('multinom-y').value;
+        const reference = document.getElementById('multinom-reference').value;
+        const checked = Array.from(document.querySelectorAll('#multinom-predictors input:checked')).map(i => i.value);
+        const errEl = document.getElementById('multinom-error');
+        errEl.textContent = '';
+        if (!yCol) return errEl.textContent = 'Pick an outcome variable.';
+        if (!reference) return errEl.textContent = 'Pick a reference level.';
+        if (checked.length === 0) return errEl.textContent = 'Pick at least one predictor.';
+        const yColumn = getColumn(yCol);
+        if (!yColumn || yColumn.type !== 'categ') return errEl.textContent = 'Outcome must be categorical.';
+        const levels = Array.from(new Set(yColumn.categValues));
+        if (levels.length < 3) return errEl.textContent = `Outcome has only ${levels.length} level${levels.length === 1 ? '' : 's'} — for 2 levels use binary Logistic Regression.`;
+
+        const allCols = [yCol, ...checked];
+        const ds = buildPyDataset(allCols);
+        if (ds.n < (levels.length - 1) * checked.length + 10) return errEl.textContent = `After dropping rows with missing values, only ${ds.n} rows remain — too few for this model.`;
+        const predictorTypes = checked.map(name => getColumn(name).type);
+
+        await runWithPyodide('multinom', 'multinom-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('y_col', yCol);
+            pyodide.globals.set('reference_level', reference);
+            pyodide.globals.set('predictor_cols', pyodide.toPy(checked));
+            pyodide.globals.set('predictor_types', pyodide.toPy(predictorTypes));
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+import statsmodels.api as sm
+from scipy.stats import chi2 as chi2_dist
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+
+# Encode y as integer codes; reference level = 0
+y_str = df[y_col].astype(str)
+levels = list(y_str.unique())
+# put reference first
+levels = [str(reference_level)] + [l for l in levels if l != str(reference_level)]
+level_map = {l: i for i, l in enumerate(levels)}
+y_int = y_str.map(level_map).astype(int).values
+
+# Build design matrix
+X_cols = []
+labels = []
+for col, ctype in zip(list(predictor_cols), list(predictor_types)):
+    if ctype == 'quant':
+        X_cols.append(pd.to_numeric(df[col], errors='coerce').rename(col))
+        labels.append(col)
+    else:
+        dummies = pd.get_dummies(df[col].astype(str), prefix=col, drop_first=True).astype(float)
+        for c in dummies.columns:
+            X_cols.append(dummies[c])
+            labels.append(c)
+
+X = pd.concat(X_cols, axis=1)
+X = sm.add_constant(X, has_constant='add').astype(float)
+
+try:
+    res = sm.MNLogit(y_int, X.values).fit(disp=0, maxiter=500)
+except Exception as e:
+    raise RuntimeError(f"MNLogit could not converge: {e}. Check for perfect separation, collinear predictors, or sparse outcome categories.")
+
+params = np.array(res.params)  # (n_predictors+1) x (n_levels-1)
+bse = np.array(res.bse)
+pvals = np.array(res.pvalues)
+ci = res.conf_int()  # MultiIndex DataFrame
+
+# Build coefficient table per non-reference outcome level
+coefs = []
+non_ref_levels = levels[1:]
+n_predictors_plus_const = params.shape[0]
+for j, lvl in enumerate(non_ref_levels):
+    level_coefs = []
+    for i in range(n_predictors_plus_const):
+        name = 'const' if i == 0 else labels[i - 1]
+        b = float(params[i, j])
+        se = float(bse[i, j])
+        p = float(pvals[i, j])
+        # ci.iloc indexing for MNLogit: rows = (predictor, outcome), cols = [lower, upper]
+        # actually statsmodels stacks them differently — try iterating
+        # MNLogit conf_int returns a DataFrame of shape (n_predictors * n_outcomes, 2)
+        # Index: predictor, columns: lower/upper, but multiple outcomes — use position
+        try:
+            ci_row = ci.iloc[i + j * n_predictors_plus_const]
+            ci_lo = float(ci_row[0])
+            ci_hi = float(ci_row[1])
+        except Exception:
+            ci_lo = b - 1.96 * se
+            ci_hi = b + 1.96 * se
+        level_coefs.append({
+            'name': name, 'b': b, 'se': se, 'z': b/se if se else None, 'p': p,
+            'or': float(np.exp(b)), 'or_lo': float(np.exp(ci_lo)), 'or_hi': float(np.exp(ci_hi))
+        })
+    coefs.append({'level': lvl, 'coefs': level_coefs})
+
+# Overall LR test
+ll_full = float(res.llf); ll_null = float(res.llnull)
+lr_chi2 = float(2 * (ll_full - ll_null))
+n_params = params.size  # total coefs
+lr_df = int(n_params - (len(levels) - 1))  # constants don't count toward predictor df
+lr_p = float(1 - chi2_dist.cdf(lr_chi2, lr_df)) if lr_df > 0 else None
+mcfadden = float(1 - ll_full / ll_null) if ll_null != 0 else None
+
+# Predicted classes (most-likely category)
+prob = np.array(res.predict(X.values))  # n x n_levels
+pred_class = prob.argmax(axis=1)
+accuracy = float((pred_class == y_int).mean())
+
+# Per-class counts in outcome
+class_counts = {l: int((y_int == i).sum()) for i, l in enumerate(levels)}
+
+result = {
+    'y_col': y_col, 'levels': levels, 'reference': levels[0],
+    'predictor_labels': labels, 'n': int(len(df)),
+    'class_counts': class_counts,
+    'coefs_by_level': coefs,
+    'll_full': ll_full, 'll_null': ll_null,
+    'lr_chi2': lr_chi2, 'lr_df': lr_df, 'lr_p': lr_p,
+    'mcfadden_r2': mcfadden,
+    'aic': float(res.aic), 'bic': float(res.bic),
+    'accuracy': accuracy
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderMultinom(result);
+        });
+    }
+
+    function renderMultinom(res) {
+        const overallSig = res.lr_p !== null && res.lr_p < 0.05;
+        let coefBlocks = '';
+        res.coefs_by_level.forEach(block => {
+            let rows = '';
+            block.coefs.forEach(c => {
+                const isConst = c.name === 'const';
+                const sig = c.p < 0.05;
+                const orStr = isConst ? '&mdash;' : `${fmt(c.or)} <span style="color:#7f8c8d;font-size:11px;">[${fmt(c.or_lo)}, ${fmt(c.or_hi)}]</span>`;
+                rows += `<tr>
+                    <td><strong>${escapeHtml(isConst ? '(Intercept)' : c.name)}</strong></td>
+                    <td class="num">${fmt(c.b)}</td>
+                    <td class="num">${fmt(c.se)}</td>
+                    <td class="num">${fmt(c.z)}</td>
+                    <td class="num">${fmtP(c.p)}</td>
+                    <td class="num">${orStr}</td>
+                    <td><span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'sig.' : 'ns'}</span></td>
+                </tr>`;
+            });
+            coefBlocks += `
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">${escapeHtml(block.level)} <span style="color:#7f8c8d;font-size:11px;">(vs. reference: ${escapeHtml(res.reference)})</span></h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead><tr>
+                <th>Predictor</th><th class="num">B</th><th class="num">SE</th><th class="num">z</th><th class="num">p</th><th class="num">OR [95% CI]</th><th>Sig.</th>
+            </tr></thead><tbody>${rows}</tbody></table>
+            </div>`;
+        });
+
+        let countRows = '';
+        res.levels.forEach(l => {
+            countRows += `<tr><td><strong>${escapeHtml(l)}</strong>${l === res.reference ? ' <span style="color:#7f8c8d;font-size:11px;">(reference)</span>' : ''}</td><td class="num">${res.class_counts[l]}</td><td class="num">${(res.class_counts[l] / res.n * 100).toFixed(1)}%</td></tr>`;
+        });
+
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Multinomial Logistic Regression</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Predicting <strong>${escapeHtml(res.y_col)}</strong> (${res.levels.length} levels; reference: <strong>${escapeHtml(res.reference)}</strong>) from ${res.predictor_labels.length} predictor${res.predictor_labels.length === 1 ? '' : 's'}. N = ${res.n}.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">Outcome distribution</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Level</th><th class="num">n</th><th class="num">%</th>
+            </tr></thead><tbody>${countRows}</tbody></table>
+
+            ${coefBlocks}
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Model fit</h4>
+            <table class="stats-table"><tbody>
+                <tr><td>Likelihood-ratio &chi;&sup2;(${res.lr_df})</td><td class="num">${fmt(res.lr_chi2)}</td><td class="num">p ${apaP(res.lr_p)}</td></tr>
+                <tr><td>McFadden's pseudo-R&sup2;</td><td class="num">${fmt(res.mcfadden_r2)}</td><td class="num">&mdash;</td></tr>
+                <tr><td>AIC / BIC</td><td class="num">${fmt(res.aic)}</td><td class="num">${fmt(res.bic)}</td></tr>
+                <tr><td>Log-likelihood (full / null)</td><td class="num">${fmt(res.ll_full)}</td><td class="num">${fmt(res.ll_null)}</td></tr>
+                <tr><td>Classification accuracy (most-likely class)</td><td class="num">${(res.accuracy * 100).toFixed(1)}%</td><td class="num">&mdash;</td></tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> The overall multinomial model is <span class="${overallSig ? 'sig-yes' : 'sig-no'}">${overallSig ? 'statistically significant' : 'not statistically significant'}</span> at &alpha;=.05, &chi;&sup2;(${res.lr_df}) = ${fmt(res.lr_chi2)}, p ${apaP(res.lr_p)}, McFadden's R&sup2; = ${fmt(res.mcfadden_r2)}. Each non-reference outcome level has its own coefficient table above; an odds ratio is the multiplicative change in the odds of being in <em>that</em> level rather than the reference (<strong>${escapeHtml(res.reference)}</strong>) for a one-unit increase in the predictor.
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing predictor or outcome value. Categorical predictors are dummy-coded with the first alphabetical level as reference.</p>
+            ${apaButton('multinom', res, {})}
+        </div>`;
+        showResults(html);
+    }
+
     function showResults(html) {
         const r = document.getElementById('results');
         r.innerHTML = html;
@@ -4226,6 +5552,51 @@ result_json = json.dumps(result)
             if (mainA) lines.push(`Main effect of ${res.iv1}: F(${fmt(mainA.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(mainA.F)}, p ${apaP(mainA.p)}, partial η² = ${fmt(mainA.partial_eta2)}.`);
             if (mainB) lines.push(`Main effect of ${res.iv2}: F(${fmt(mainB.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(mainB.F)}, p ${apaP(mainB.p)}, partial η² = ${fmt(mainB.partial_eta2)}.`);
             if (inter) lines.push(`${res.iv1} × ${res.iv2} interaction: F(${fmt(inter.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(inter.F)}, p ${apaP(inter.p)}, partial η² = ${fmt(inter.partial_eta2)}.`);
+            return lines.join(' ');
+        }
+        if (test === 'pairedt') {
+            const sig = res.p < 0.05;
+            return `A paired-samples t-test compared ${res.col1} (M = ${fmt(res.mean1)}, SD = ${fmt(res.sd1)}) and ${res.col2} (M = ${fmt(res.mean2)}, SD = ${fmt(res.sd2)}) on N = ${res.n} subjects. The mean difference was ${fmt(res.mean_diff)} (SD = ${fmt(res.sd_diff)}, 95% CI [${fmt(res.ci_lo)}, ${fmt(res.ci_hi)}]). The difference was ${sig ? '' : 'not '}statistically significant, t(${res.df}) = ${fmt(res.t)}, p ${apaP(res.p)}, d_z = ${fmt(res.dz)}.`;
+        }
+        if (test === 'mannwhitney') {
+            const sig = res.p < 0.05;
+            return `A Mann-Whitney U test compared ${res.dv} between ${res.levels[0]} (Mdn = ${fmt(res.median1)}, n = ${res.n1}) and ${res.levels[1]} (Mdn = ${fmt(res.median2)}, n = ${res.n2}). The distributions ${sig ? 'differed' : 'did not differ'} significantly, U = ${fmt(res.U)}, z = ${fmt(res.z)}, p ${apaP(res.p)}, rank-biserial r = ${fmt(res.r)}.`;
+        }
+        if (test === 'wilcoxon') {
+            const sig = res.p < 0.05;
+            return `A Wilcoxon signed-rank test compared ${res.col1} (Mdn = ${fmt(res.median1)}) and ${res.col2} (Mdn = ${fmt(res.median2)}) on N = ${res.n} pairs (${res.nz} non-zero differences). The difference was ${sig ? '' : 'not '}statistically significant, W = ${fmt(res.W)}, z = ${fmt(res.z)}, p ${apaP(res.p)}, matched-pairs r = ${fmt(res.r)}.`;
+        }
+        if (test === 'kruskal') {
+            const sig = res.p < 0.05;
+            return `A Kruskal-Wallis test compared ${res.dv} across ${res.k} groups of ${res.iv} (N = ${res.n}). The omnibus test was ${sig ? '' : 'not '}statistically significant, H(${res.df}) = ${fmt(res.H)}, p ${apaP(res.p)}, ε² = ${fmt(res.epsilon2)}.${sig ? ' Dunn pairwise comparisons (Bonferroni-corrected) follow.' : ''}`;
+        }
+        if (test === 'cronbach') {
+            const flagged = res.item_stats.filter(s => s.alpha_if_deleted !== null && res.alpha !== null && s.alpha_if_deleted > res.alpha);
+            return `Internal-consistency reliability for the ${res.k}-item scale was ${res.alpha !== null ? (res.alpha < 0.7 ? 'questionable' : res.alpha < 0.8 ? 'acceptable' : res.alpha < 0.9 ? 'good' : 'excellent') : 'not estimable'}, Cronbach's α = ${fmt(res.alpha)}, 95% CI [${fmt(res.ci_lo)}, ${fmt(res.ci_hi)}], N = ${res.n}, mean inter-item r = ${fmt(res.mean_inter_item_r)}.${flagged.length ? ' Removing ' + flagged.map(s => s.item).join(', ') + ' would improve α.' : ''}`;
+        }
+        if (test === 'rmanova') {
+            const sig = res.p !== null && res.p < 0.05;
+            const sphericityViolated = res.mauchly_p !== null && res.mauchly_p < 0.05;
+            let line = `A repeated-measures ANOVA tested for differences across ${res.k} timepoints (${res.measures.join(', ')}) on N = ${res.n} subjects.`;
+            if (sphericityViolated) {
+                const useGG = res.gg_epsilon !== null && res.gg_epsilon < 0.75;
+                const eps = useGG ? res.gg_epsilon : res.hf_epsilon;
+                const corrP = useGG ? res.gg_p : res.hf_p;
+                line += ` Mauchly's test indicated a violation of sphericity, χ²(${res.mauchly_df}) = ${fmt(res.mauchly_chi2)}, p ${apaP(res.mauchly_p)}; ${useGG ? 'Greenhouse-Geisser' : 'Huynh-Feldt'}-corrected results are reported (ε = ${fmt(eps)}). The effect of time was ${sig ? '' : 'not '}statistically significant, F(${fmt(res.df_treatment * eps, 2)}, ${fmt(res.df_error * eps, 2)}) = ${fmt(res.F)}, p ${apaP(corrP)}, partial η² = ${fmt(res.partial_eta2)}.`;
+            } else {
+                line += ` The effect of time was ${sig ? '' : 'not '}statistically significant, F(${res.df_treatment}, ${res.df_error}) = ${fmt(res.F)}, p ${apaP(res.p)}, partial η² = ${fmt(res.partial_eta2)}.`;
+            }
+            return line;
+        }
+        if (test === 'multinom') {
+            const sig = res.lr_p !== null && res.lr_p < 0.05;
+            const lines = [`A multinomial logistic regression predicted ${res.y_col} (${res.levels.length} levels; reference = ${res.reference}; N = ${res.n}). The overall model was ${sig ? '' : 'not '}statistically significant, χ²(${res.lr_df}) = ${fmt(res.lr_chi2)}, p ${apaP(res.lr_p)}, McFadden's R² = ${fmt(res.mcfadden_r2)}.`];
+            res.coefs_by_level.forEach(block => {
+                block.coefs.forEach(c => {
+                    if (c.name === 'const') return;
+                    lines.push(`${block.level} vs. ${res.reference} — ${c.name}: B = ${fmt(c.b)}, SE = ${fmt(c.se)}, OR = ${fmt(c.or)} [${fmt(c.or_lo)}, ${fmt(c.or_hi)}], p ${apaP(c.p)}.`);
+                });
+            });
             return lines.join(' ');
         }
         return '';
