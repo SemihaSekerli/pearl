@@ -218,44 +218,87 @@ footer {
 
     <div class="wizard" id="wizard">
         <div class="progress">
-            <div class="progress-step active" data-step="0"></div>
-            <div class="progress-step" data-step="1"></div>
-            <div class="progress-step" data-step="2"></div>
-            <div class="progress-step" data-step="3"></div>
-            <div class="progress-step" data-step="4"></div>
-            <div class="progress-text" id="progressText">Step 1 of 5</div>
+            <div class="progress-text" id="progressText">Step 1</div>
         </div>
 
-        <div class="step active" data-step="0">
+        <!-- Step: GOAL -->
+        <div class="step active" data-step="goal">
             <h3>What are you trying to learn?</h3>
             <p class="step-help">Pick the goal that best describes your research question.</p>
             <div class="choices cols-2">
                 <button class="choice" data-key="goal" data-value="relationship">
                     <strong>Find a relationship</strong>
-                    <em>e.g., does X predict Y? are X and Y correlated?</em>
+                    <em>does X predict Y? are X and Y correlated?</em>
                 </button>
                 <button class="choice" data-key="goal" data-value="differences">
-                    <strong>Compare groups</strong>
-                    <em>e.g., do men and women differ in Y? does treatment matter?</em>
+                    <strong>Compare groups or conditions</strong>
+                    <em>do treatment and control differ? does pre vs. post change?</em>
                 </button>
                 <button class="choice" data-key="goal" data-value="prediction">
-                    <strong>Predict an outcome</strong>
-                    <em>e.g., who will pass / fail? who will buy / leave?</em>
+                    <strong>Predict a categorical outcome</strong>
+                    <em>who passes/fails? who buys/leaves? which of 3 categories?</em>
                 </button>
                 <button class="choice" data-key="goal" data-value="structure">
                     <strong>Find underlying structure</strong>
-                    <em>e.g., do these survey items group into factors?</em>
+                    <em>do these survey items group into factors?</em>
+                </button>
+                <button class="choice" data-key="goal" data-value="reliability">
+                    <strong>Test scale reliability</strong>
+                    <em>do my Likert items measure the same thing? (Cronbach's &alpha;)</em>
                 </button>
             </div>
         </div>
 
-        <div class="step" data-step="1">
-            <h3>What's your dependent variable (outcome)?</h3>
-            <p class="step-help">The variable you want to explain or predict.</p>
+        <!-- Step: DESIGN (within vs between) — for differences -->
+        <div class="step" data-step="design">
+            <h3>Are subjects the same across conditions?</h3>
+            <p class="step-help">In a within-subjects (paired) design, the same person is measured multiple times. In between-subjects, different people are in different groups.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="design" data-value="between">
+                    <strong>Different subjects per group</strong>
+                    <em>between-subjects (independent samples)</em>
+                </button>
+                <button class="choice" data-key="design" data-value="within">
+                    <strong>Same subjects measured multiple times</strong>
+                    <em>within-subjects (paired / repeated)</em>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step: TIMES — for within-subjects -->
+        <div class="step" data-step="times">
+            <h3>How many times are subjects measured?</h3>
+            <p class="step-help">Pre/post is two timepoints. Baseline + multiple follow-ups is 3+.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="times" data-value="2">
+                    <strong>Two timepoints / conditions</strong>
+                    <em>e.g., pre vs. post</em>
+                </button>
+                <button class="choice" data-key="times" data-value="3plus">
+                    <strong>Three or more</strong>
+                    <em>e.g., baseline, 6mo, 12mo</em>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step: REL_IVCOUNT — for relationship -->
+        <div class="step" data-step="rel-ivcount">
+            <h3>How many predictors do you have?</h3>
+            <p class="step-help">If you're just looking at the link between two variables, that's one predictor.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="ivCount" data-value="1"><strong>One predictor</strong></button>
+                <button class="choice" data-key="ivCount" data-value="2plus"><strong>Two or more</strong></button>
+            </div>
+        </div>
+
+        <!-- Step: DVTYPE — for between-subjects differences -->
+        <div class="step" data-step="dvType">
+            <h3>What's your outcome (dependent variable)?</h3>
+            <p class="step-help">The variable you want to compare across groups.</p>
             <div class="choices cols-2">
                 <button class="choice" data-key="dvType" data-value="quant">
                     <strong>Quantitative</strong>
-                    <em>numbers — test scores, salary, BMI, time</em>
+                    <em>numbers — test scores, BMI, time, salary</em>
                 </button>
                 <button class="choice" data-key="dvType" data-value="categ">
                     <strong>Categorical</strong>
@@ -264,18 +307,52 @@ footer {
             </div>
         </div>
 
-        <div class="step" data-step="2">
-            <h3>How many outcomes (DVs) are you measuring?</h3>
-            <p class="step-help">Most studies have one. Multiple DVs change the test.</p>
+        <!-- Step: DVCOUNT — for between-subjects with quant DV (and for prediction) -->
+        <div class="step" data-step="dvCount">
+            <h3 id="dvCountHeader">How many outcomes (DVs) are you measuring?</h3>
+            <p class="step-help" id="dvCountHelp">Most studies have one outcome. Multiple DVs call for MANOVA/MANCOVA.</p>
             <div class="choices cols-2">
-                <button class="choice" data-key="dvCount" data-value="1"><strong>One outcome</strong></button>
-                <button class="choice" data-key="dvCount" data-value="2plus"><strong>Two or more outcomes</strong></button>
+                <button class="choice" data-key="dvCount" data-value="1" id="dvCount1Btn"><strong>One outcome</strong></button>
+                <button class="choice" data-key="dvCount" data-value="2plus" id="dvCount2Btn"><strong>Two or more</strong></button>
             </div>
         </div>
 
-        <div class="step" data-step="3">
+        <!-- Step: GROUPS — for between-subjects, quant DV + 1 DV -->
+        <div class="step" data-step="groups">
+            <h3>How many groups are you comparing?</h3>
+            <p class="step-help">Counts the number of levels of your grouping variable.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="groups" data-value="2">
+                    <strong>Two groups</strong>
+                    <em>e.g., treatment vs. control</em>
+                </button>
+                <button class="choice" data-key="groups" data-value="3plus">
+                    <strong>Three or more</strong>
+                    <em>e.g., low / medium / high dose</em>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step: IVCOUNT — for between-subjects with categ IV -->
+        <div class="step" data-step="ivCount">
+            <h3>How many grouping variables (IVs)?</h3>
+            <p class="step-help">Two IVs gives you a factorial design (main effects + interaction).</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="ivCount" data-value="1">
+                    <strong>One IV</strong>
+                    <em>e.g., just condition</em>
+                </button>
+                <button class="choice" data-key="ivCount" data-value="2">
+                    <strong>Two IVs</strong>
+                    <em>e.g., condition &times; gender (factorial)</em>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step: IVTYPE — for between-subjects, quant DV + 1 DV (decides quant vs categ vs mixed predictors) -->
+        <div class="step" data-step="ivType">
             <h3>What about your predictors / independent variables?</h3>
-            <p class="step-help">The variable(s) you think influence the outcome.</p>
+            <p class="step-help">Type of the variable(s) you think influence the outcome.</p>
             <div class="choices">
                 <button class="choice" data-key="ivType" data-value="quant">
                     <strong>All quantitative</strong>
@@ -292,12 +369,45 @@ footer {
             </div>
         </div>
 
-        <div class="step" data-step="4">
+        <!-- Step: COVARIATE — for between-subjects, quant DV + categ IV -->
+        <div class="step" data-step="covariate">
             <h3>Do you have a covariate to control for?</h3>
             <p class="step-help">A nuisance variable you want to statistically remove (e.g., pre-test score, age, baseline).</p>
             <div class="choices cols-2">
                 <button class="choice" data-key="covariate" data-value="no"><strong>No</strong></button>
                 <button class="choice" data-key="covariate" data-value="yes"><strong>Yes, one or more</strong></button>
+            </div>
+        </div>
+
+        <!-- Step: PARAMETRIC — for differences (within or between with quant DV, 1 IV) and for relationship -->
+        <div class="step" data-step="parametric">
+            <h3>Is your outcome roughly normal?</h3>
+            <p class="step-help">Parametric tests (t-test, ANOVA, Pearson) assume the outcome is roughly normally distributed. If your data is heavily skewed, ordinal (Likert ranks), or you have a small sample with outliers, the non-parametric alternative is safer.</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="parametric" data-value="yes">
+                    <strong>Yes, roughly normal</strong>
+                    <em>or sample is large (N &ge; 30)</em>
+                </button>
+                <button class="choice" data-key="parametric" data-value="no">
+                    <strong>No / ordinal / non-parametric</strong>
+                    <em>Likert ranks, skewed, small N with outliers</em>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step: PRED_DVCOUNT — for prediction -->
+        <div class="step" data-step="pred-dvcount">
+            <h3>How many categories does your outcome have?</h3>
+            <p class="step-help">Two = binary (yes/no, pass/fail). Three or more = multinomial (A/B/C).</p>
+            <div class="choices cols-2">
+                <button class="choice" data-key="dvCount" data-value="1">
+                    <strong>Two categories (binary)</strong>
+                    <em>pass/fail, yes/no, churn/stay</em>
+                </button>
+                <button class="choice" data-key="dvCount" data-value="2plus">
+                    <strong>Three or more</strong>
+                    <em>e.g., low / medium / high; A/B/C</em>
+                </button>
             </div>
         </div>
 
@@ -312,6 +422,7 @@ footer {
         <h3 id="resultTest">—</h3>
         <p id="resultExplain"></p>
         <div class="your-setup" id="resultSetup"></div>
+        <div id="resultCardCTAs" style="margin-top:24px;display:flex;flex-wrap:wrap;gap:10px;"></div>
         <p style="margin-top:20px;color:#7f8c8d;font-size:14px;">Want to refine? <a href="#" id="restartLink">Start over</a> with different answers, or <a href="index.html">head back to Pearl</a> to upload data and run the test.</p>
     </div>
 </main>
@@ -322,9 +433,9 @@ footer {
 
 <script>
 (function(){
-    var state = { goal:null, dvType:null, dvCount:null, ivType:null, covariate:null };
-    var stepCount = 5;
-    var currentStep = 0;
+    var state = {};
+    var stepHistory = ['goal'];
+    var keysSet = [null];  // parallel: keysSet[i] = state key answered to land on stepHistory[i]
 
     var wizard = document.getElementById('wizard');
     var result = document.getElementById('result');
@@ -332,18 +443,12 @@ footer {
     var backBtn = document.getElementById('backBtn');
     var restartBtn = document.getElementById('restartBtn');
 
-    function showStep(n) {
-        currentStep = n;
+    function showStep(stepId) {
         document.querySelectorAll('.step').forEach(function(s){
-            s.classList.toggle('active', parseInt(s.dataset.step,10) === n);
+            s.classList.toggle('active', s.dataset.step === stepId);
         });
-        document.querySelectorAll('.progress-step').forEach(function(p,i){
-            p.classList.remove('active','done');
-            if (i < n) p.classList.add('done');
-            if (i === n) p.classList.add('active');
-        });
-        progressText.textContent = 'Step ' + (n+1) + ' of ' + stepCount;
-        backBtn.disabled = (n === 0);
+        progressText.textContent = 'Step ' + stepHistory.length;
+        backBtn.disabled = stepHistory.length <= 1;
         restartBtn.style.display = 'none';
         wizard.style.display = 'block';
         result.classList.remove('show');
@@ -351,54 +456,198 @@ footer {
 
     function chooseNext(key, value) {
         state[key] = value;
-        if (state.goal === 'structure') return finalize();
-        if (state.goal === 'prediction' && currentStep === 0) {
-            state.dvType = 'categ';
-            return showStep(2);
+        var s = state;
+        var nextId = null;
+        if (s.goal === 'reliability' || s.goal === 'structure') return finalize();
+        if (s.goal === 'prediction') {
+            if (s.dvCount === undefined) nextId = 'pred-dvcount';
+            else return finalize();
+        } else if (s.goal === 'relationship') {
+            if (s.ivCount === undefined) nextId = 'rel-ivcount';
+            else if (s.ivCount === '2plus') return finalize();
+            else if (s.parametric === undefined) nextId = 'parametric';
+            else return finalize();
+        } else if (s.goal === 'differences') {
+            if (s.design === undefined) nextId = 'design';
+            else if (s.design === 'within') {
+                if (s.times === undefined) nextId = 'times';
+                else if (s.parametric === undefined) nextId = 'parametric';
+                else return finalize();
+            } else {
+                // between-subjects
+                if (s.dvType === undefined) nextId = 'dvType';
+                else if (s.dvType === 'categ') return finalize();
+                else if (s.dvCount === undefined) nextId = 'dvCount';
+                else if (s.dvCount === '2plus') {
+                    if (s.covariate === undefined) nextId = 'covariate';
+                    else return finalize();
+                } else if (s.ivType === undefined) nextId = 'ivType';
+                else if (s.ivType === 'categ') {
+                    if (s.groups === undefined) nextId = 'groups';
+                    else if (s.ivCount === undefined) nextId = 'ivCount';
+                    else if (s.covariate === undefined) nextId = 'covariate';
+                    else if (s.ivCount === '1' && s.covariate === 'no' && s.parametric === undefined) nextId = 'parametric';
+                    else return finalize();
+                } else {
+                    // quant or mixed IV
+                    if (s.covariate === undefined) nextId = 'covariate';
+                    else return finalize();
+                }
+            }
         }
-        if (currentStep >= stepCount - 1) return finalize();
-        showStep(currentStep + 1);
+
+        if (nextId) {
+            stepHistory.push(nextId);
+            keysSet.push(key);
+            showStep(nextId);
+        }
     }
 
     function recommend() {
         var s = state;
+        if (s.goal === 'reliability') {
+            return {
+                test: "Cronbach's α (Internal-Consistency Reliability)",
+                why: "Cronbach's α tests whether a set of survey/scale items hang together — i.e., whether they're consistent enough to be summed into a single score. Use 3+ Likert or numerically-scored items, all in the same direction."
+            };
+        }
         if (s.goal === 'structure') {
             return {
-                test: 'Factor Analysis or Principal Component Analysis (PCA)',
-                why: 'You want to find latent structure underlying multiple variables. Factor Analysis tests whether a set of observed variables reflect fewer underlying factors (good for theory-driven work). PCA reduces variables to fewer composite components (good for data reduction). Use 3+ quantitative variables.'
+                test: 'Factor Analysis (or Principal Component Analysis)',
+                why: 'You want to find latent structure underlying multiple variables. Factor Analysis tests whether observed variables reflect fewer underlying factors (theory-driven). PCA reduces variables to fewer components (data reduction). Use 3+ quantitative variables.'
             };
         }
         if (s.goal === 'prediction') {
+            if (s.dvCount === '2plus') {
+                return {
+                    test: 'Multinomial Logistic Regression',
+                    why: "You're predicting which of three or more categories an observation falls into. Multinomial logistic regression handles this — each non-reference category gets its own coefficient table."
+                };
+            }
             return {
-                test: s.dvCount === '2plus' ? 'Multinomial Logistic Regression or Discriminant Analysis' : 'Binary Logistic Regression',
-                why: s.dvCount === '2plus'
-                    ? 'You\'re predicting which of three or more categories an observation belongs to. Multinomial Logistic Regression handles this when predictors are mixed; Discriminant Analysis assumes multivariate normality of the predictors.'
-                    : 'You\'re predicting a yes/no (or pass/fail) outcome. Binary Logistic Regression models the probability of one category given your predictors.'
+                test: 'Binary Logistic Regression',
+                why: "You're predicting a yes/no (or pass/fail) outcome. Binary logistic regression models the probability of one category given your predictors."
             };
         }
         if (s.goal === 'relationship') {
-            if (s.dvType === 'quant' && s.ivType === 'quant') {
-                if (s.dvCount === '2plus') {
-                    return { test: 'Path Analysis', why: 'Multiple quantitative outcomes and quantitative predictors with hypothesized directional relationships call for Path Analysis (a special case of structural equation modeling).' };
+            if (s.ivCount === '2plus') {
+                return {
+                    test: 'Multiple Regression',
+                    why: "A quantitative outcome with two or more predictors — multiple regression estimates each predictor's unique contribution while controlling for the others."
+                };
+            }
+            if (s.parametric === 'no') {
+                return {
+                    test: 'Spearman Rank Correlation',
+                    why: 'Spearman uses ranks, so it handles ordinal data, skewed distributions, and outliers without assuming normality. In Pearl, run "Pearson Correlation" and switch the Method dropdown to Spearman.'
+                };
+            }
+            return {
+                test: 'Pearson Correlation',
+                why: "Pearson's r tests the linear relationship between two roughly normal quantitative variables. If your data is non-normal or has outliers, switch to Spearman in the Method dropdown."
+            };
+        }
+        // differences
+        if (s.design === 'within') {
+            if (s.times === '3plus') {
+                if (s.parametric === 'no') {
+                    return {
+                        test: 'Friedman Test (not in Pearl yet — closest fit: Repeated-Measures ANOVA)',
+                        why: "For 3+ within-subjects measurements with non-normal data, the Friedman test is the non-parametric option but isn't in Pearl yet. As a workaround, run Repeated-Measures ANOVA in Pearl and watch the sphericity check carefully; consider SPSS or R if assumptions are seriously violated."
+                    };
                 }
-                return s.covariate === 'yes' || s.ivType === 'quant'
-                    ? { test: 'Multiple Regression (or Bivariate Correlation if 1 IV)', why: 'Quantitative outcome predicted by quantitative predictor(s). With a single IV and no controls, Bivariate Correlation describes the relationship. With 2+ IVs (or covariates), Multiple Regression estimates each predictor\'s unique contribution.' }
-                    : { test: 'Bivariate Correlation', why: 'One quantitative outcome and one quantitative predictor — Pearson\'s r tests the strength and direction of their linear relationship.' };
+                return {
+                    test: 'Repeated-Measures ANOVA',
+                    why: "Same subjects measured at 3+ timepoints — repeated-measures ANOVA tests whether the means differ. Pearl runs Mauchly's sphericity test and applies Greenhouse-Geisser/Huynh-Feldt corrections automatically."
+                };
             }
-            if (s.dvType === 'categ' && s.ivType === 'categ') {
-                return { test: 'Chi-Square Test of Independence', why: 'Both variables are categorical — Chi-Square tests whether the categories are associated more than expected by chance.' };
+            // 2 timepoints
+            if (s.parametric === 'no') {
+                return {
+                    test: 'Wilcoxon Signed-Rank Test',
+                    why: "Same subjects measured twice on a non-normal/ordinal outcome — Wilcoxon's signed-rank is the non-parametric counterpart to the paired t-test."
+                };
             }
-            return { test: 'Logistic Regression (if DV is categorical) or Multiple Regression (if DV is quantitative)', why: 'Mixed predictor types are fine for either. Choose based on your DV type — categorical DV → Logistic; quantitative DV → Multiple Regression.' };
+            return {
+                test: 'Paired-Samples t-Test',
+                why: 'Same subjects measured twice on a roughly-normal quantitative outcome — paired t-test compares the means of the two measurements.'
+            };
         }
+        // between-subjects
         if (s.dvType === 'categ') {
-            return { test: 'Chi-Square Test of Independence', why: 'When you\'re comparing groups on a categorical outcome, Chi-Square tests whether the distribution of categories differs across groups.' };
+            return {
+                test: 'Chi-Square Test of Independence',
+                why: "Both variables are categorical — chi-square tests whether the categories are associated more than expected by chance. Pearl runs Fisher's exact test automatically for 2×2 tables."
+            };
         }
-        var multipleDV = s.dvCount === '2plus';
-        var hasCov = s.covariate === 'yes';
-        if (multipleDV && hasCov) return { test: 'MANCOVA (or Factorial MANCOVA if 2+ IVs)', why: 'Multiple quantitative outcomes, group differences, AND a covariate — MANCOVA tests group effects on a set of DVs while statistically controlling for the covariate.' };
-        if (multipleDV) return { test: 'MANOVA (or Factorial MANOVA if 2+ IVs)', why: 'Multiple quantitative outcomes compared across groups — MANOVA tests whether groups differ on the combined set of DVs.' };
-        if (hasCov) return { test: 'ANCOVA (or Factorial ANCOVA if 2+ IVs)', why: 'One quantitative outcome, comparing groups, with a covariate — ANCOVA controls for the covariate before testing group differences.' };
-        return { test: 't-Test (2 groups) or One-Way ANOVA (3+ groups); Factorial ANOVA if 2+ IVs', why: 'Quantitative outcome compared across groups. Use t-Test for two groups, One-Way ANOVA for three or more, and Factorial ANOVA when you have multiple grouping IVs (e.g., gender × condition).' };
+        // quant DV between-subjects
+        if (s.dvCount === '2plus') {
+            if (s.covariate === 'yes') {
+                return {
+                    test: 'MANCOVA (not in Pearl yet — closest fit: MANOVA)',
+                    why: "Multiple quantitative outcomes compared across groups while controlling for a covariate calls for MANCOVA, which isn't in Pearl yet. Run MANOVA in Pearl and report the covariate as a limitation, or use SPSS/R for full MANCOVA."
+                };
+            }
+            return {
+                test: 'MANOVA',
+                why: "Multiple quantitative outcomes compared across groups — MANOVA tests whether groups differ on the combined set of DVs (Wilks' Lambda, Pillai's trace, etc.)."
+            };
+        }
+        // 1 quant DV between
+        if (s.ivType === 'categ') {
+            if (s.ivCount === '2') {
+                if (s.covariate === 'yes') {
+                    return {
+                        test: 'Factorial ANCOVA (not in Pearl yet — closest fit: Factorial ANOVA or ANCOVA)',
+                        why: "Two categorical IVs with a covariate normally calls for factorial ANCOVA — not in Pearl yet. Run factorial ANOVA in Pearl without the covariate, or ANCOVA with one IV plus the covariate, and note the limitation."
+                    };
+                }
+                return {
+                    test: 'Factorial (Two-Way) ANOVA',
+                    why: "Two categorical IVs predicting one quantitative outcome — factorial ANOVA tests both main effects plus the interaction. The interaction tells you whether one IV's effect depends on the other."
+                };
+            }
+            // 1 IV
+            if (s.covariate === 'yes') {
+                return {
+                    test: 'ANCOVA',
+                    why: 'One quantitative outcome compared across groups, with a covariate to control for — ANCOVA adjusts the group means for the covariate before testing differences.'
+                };
+            }
+            if (s.parametric === 'no') {
+                if (s.groups === '3plus') {
+                    return {
+                        test: 'Kruskal-Wallis Test',
+                        why: "Comparing 3+ groups on a non-normal/ordinal outcome — Kruskal-Wallis is the non-parametric one-way ANOVA. Pearl runs Dunn's pairwise post-hoc with Bonferroni correction automatically."
+                    };
+                }
+                return {
+                    test: 'Mann-Whitney U Test',
+                    why: 'Comparing 2 groups on a non-normal/ordinal outcome — Mann-Whitney U is the non-parametric independent t-test.'
+                };
+            }
+            if (s.groups === '3plus') {
+                return {
+                    test: 'One-Way ANOVA',
+                    why: 'Comparing 3+ groups on a quantitative outcome — one-way ANOVA tests whether the group means differ. Pearl runs Tukey HSD pairwise post-hoc automatically when the omnibus is significant.'
+                };
+            }
+            return {
+                test: "Independent t-Test (Welch's)",
+                why: "Comparing two independent groups on a roughly-normal quantitative outcome — Welch's t-test handles unequal variances automatically."
+            };
+        }
+        // quant or mixed IV (rare path — most "compare groups" goes via categ IV)
+        if (s.covariate === 'yes' || s.ivType === 'mixed') {
+            return {
+                test: 'Multiple Regression',
+                why: "Quantitative outcome with quantitative or mixed predictors (and possibly covariates) — multiple regression estimates each predictor's unique contribution."
+            };
+        }
+        return {
+            test: 'Multiple Regression (or Pearson Correlation if just 1 IV)',
+            why: 'Quantitative outcome predicted by quantitative predictor(s). Use multiple regression with 2+ IVs; with a single IV, Pearson correlation describes the relationship.'
+        };
     }
 
     function finalize() {
@@ -406,15 +655,88 @@ footer {
         document.getElementById('resultTest').textContent = rec.test;
         document.getElementById('resultExplain').textContent = rec.why;
         var setupBits = [];
-        if (state.goal) setupBits.push('<strong>Goal:</strong> ' + ({relationship:'Find a relationship',differences:'Compare groups',prediction:'Predict an outcome',structure:'Find structure'}[state.goal]));
+        if (state.goal) setupBits.push('<strong>Goal:</strong> ' + ({relationship:'Find a relationship',differences:'Compare groups',prediction:'Predict outcome',structure:'Find structure',reliability:'Test reliability'}[state.goal]));
+        if (state.design) setupBits.push('<strong>Design:</strong> ' + (state.design === 'within' ? 'within-subjects' : 'between-subjects'));
+        if (state.times) setupBits.push('<strong>Timepoints:</strong> ' + (state.times === '2' ? '2' : '3+'));
         if (state.dvType) setupBits.push('<strong>DV:</strong> ' + (state.dvType==='quant'?'quantitative':'categorical'));
         if (state.dvCount) setupBits.push('<strong>DVs:</strong> ' + (state.dvCount==='1'?'1':'2+'));
+        if (state.groups) setupBits.push('<strong>Groups:</strong> ' + (state.groups === '2' ? '2' : '3+'));
         if (state.ivType) setupBits.push('<strong>IV(s):</strong> ' + ({quant:'quantitative',categ:'categorical',mixed:'mixed'}[state.ivType]));
+        if (state.ivCount && state.goal === 'differences') setupBits.push('<strong>IVs:</strong> ' + state.ivCount);
         if (state.covariate) setupBits.push('<strong>Covariate:</strong> ' + (state.covariate==='yes'?'yes':'no'));
+        if (state.parametric) setupBits.push('<strong>Distribution:</strong> ' + (state.parametric === 'yes' ? 'normal/parametric' : 'non-parametric'));
         document.getElementById('resultSetup').innerHTML = 'Your setup &mdash; ' + setupBits.join(' &middot; ');
+        renderCardCTAs(rec.test);
         wizard.style.display = 'none';
         result.classList.add('show');
         restartBtn.style.display = '';
+    }
+
+    // Map recommended-test text to Pearl card slugs (data-test values in index.html).
+    // Keep keys lowercase; longest/most-specific first so "multinomial logistic" matches before "logistic".
+    var TEST_TO_CARD = [
+        ['cronbach',                  { slug: 'cronbach', label: "Cronbach's α" }],
+        ['multinomial logistic',      { slug: 'multinom', label: 'Multinomial Logistic Regression' }],
+        ['binary logistic',           { slug: 'logistic', label: 'Logistic Regression' }],
+        ['logistic regression',       { slug: 'logistic', label: 'Logistic Regression' }],
+        ['repeated-measures anova',   { slug: 'rmanova', label: 'Repeated-Measures ANOVA' }],
+        ['multiple regression',       { slug: 'multireg', label: 'Multiple Regression' }],
+        ['simple linear regression',  { slug: 'regression', label: 'Simple Linear Regression' }],
+        ['paired-samples t-test',     { slug: 'pairedt', label: 'Paired t-Test' }],
+        ['paired t',                  { slug: 'pairedt', label: 'Paired t-Test' }],
+        ['wilcoxon',                  { slug: 'wilcoxon', label: 'Wilcoxon Signed-Rank' }],
+        ['mann-whitney',              { slug: 'mannwhitney', label: 'Mann-Whitney U' }],
+        ['kruskal-wallis',            { slug: 'kruskal', label: 'Kruskal-Wallis' }],
+        ['spearman',                  { slug: 'correlation', label: 'Pearson Correlation (set Method = Spearman)' }],
+        ['pearson correlation',       { slug: 'correlation', label: 'Pearson Correlation' }],
+        ['bivariate correlation',     { slug: 'correlation', label: 'Pearson Correlation' }],
+        ['mancova',                   null /* not implemented */],
+        ['manova',                    { slug: 'manova', label: 'MANOVA' }],
+        ['ancova',                    { slug: 'ancova', label: 'ANCOVA' }],
+        ['factorial (two-way) anova', { slug: 'factorial', label: 'Factorial (Two-Way) ANOVA' }],
+        ['factorial anova',           { slug: 'factorial', label: 'Factorial (Two-Way) ANOVA' }],
+        ['factorial ancova',          null],
+        ['one-way anova',             { slug: 'anova', label: 'One-Way ANOVA' }],
+        ['independent t-test',        { slug: 'ttest', label: 'Independent t-Test' }],
+        ["welch",                     { slug: 'ttest', label: "Independent t-Test (Welch's)" }],
+        ['t-test',                    { slug: 'ttest', label: 't-Test' }],
+        ['chi-square',                { slug: 'chisquare', label: 'Chi-Square' }],
+        ['factor analysis',           { slug: 'factor', label: 'Factor Analysis' }],
+        ['principal component',       { slug: 'factor', label: 'Factor Analysis (PCA closest match)' }],
+        ['discriminant analysis',     null],
+        ['path analysis',             null],
+        ['friedman',                  null]
+    ];
+
+    function findCards(testText) {
+        var lc = (testText || '').toLowerCase();
+        var hits = [];
+        var seen = new Set();
+        TEST_TO_CARD.forEach(function(pair) {
+            if (lc.indexOf(pair[0]) !== -1 && pair[1] && !seen.has(pair[1].slug)) {
+                hits.push(pair[1]);
+                seen.add(pair[1].slug);
+            }
+        });
+        return hits;
+    }
+
+    function renderCardCTAs(testText) {
+        var wrap = document.getElementById('resultCardCTAs');
+        wrap.innerHTML = '';
+        var cards = findCards(testText);
+        if (cards.length === 0) {
+            wrap.innerHTML = '<p style="color:#7f8c8d;font-size:13px;margin:0;">This test isn\'t built into Pearl yet &mdash; you can run it in SPSS, JASP, or R.</p>';
+            return;
+        }
+        cards.forEach(function(c) {
+            var a = document.createElement('a');
+            a.className = 'btn primary';
+            a.href = 'index.html#config-' + c.slug;
+            a.textContent = '→ Run this in Pearl: ' + c.label;
+            a.style.textDecoration = 'none';
+            wrap.appendChild(a);
+        });
     }
 
     document.querySelectorAll('.choice').forEach(function(btn){
@@ -424,18 +746,24 @@ footer {
     });
 
     backBtn.addEventListener('click', function(){
-        if (currentStep > 0) showStep(currentStep - 1);
+        if (stepHistory.length <= 1) return;
+        stepHistory.pop();
+        var poppedKey = keysSet.pop();
+        if (poppedKey) delete state[poppedKey];
+        showStep(stepHistory[stepHistory.length - 1]);
     });
 
     function reset() {
-        state = { goal:null, dvType:null, dvCount:null, ivType:null, covariate:null };
+        state = {};
+        stepHistory = ['goal'];
+        keysSet = [null];
         wizard.style.display = 'block';
-        showStep(0);
+        showStep('goal');
     }
     restartBtn.addEventListener('click', reset);
     document.getElementById('restartLink').addEventListener('click', function(e){ e.preventDefault(); reset(); });
 
-    showStep(0);
+    showStep('goal');
 })();
 </script>
 

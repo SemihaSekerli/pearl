@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jstat@1.9.6/dist/jstat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -694,6 +695,27 @@ table.preview tr:hover td { background: #1c2333; }
 .chat-msg.user { background: #c0392b; color: #fff; align-self: flex-end; }
 .chat-msg.bot a { color: #f1948a; text-decoration: underline; }
 .chat-msg b, .chat-msg strong { color: #ffffff; }
+.chat-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+    align-self: flex-start;
+    max-width: 100%;
+}
+.chat-chip {
+    background: transparent;
+    border: 1px solid #30363d;
+    color: #b0b8c0;
+    padding: 7px 12px;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.3;
+}
+.chat-chip:hover { border-color: #c0392b; color: #ffffff; background: #1c2333; }
 #chatInputArea {
     display: flex;
     border-top: 1px solid #30363d;
@@ -883,6 +905,7 @@ footer {
     </div>
     <div class="hero-recommender">
         Don't have data yet, or unsure which test fits? <a href="#" id="askPearlLink">Ask Pearl &mdash; he'll walk you through it &rarr;</a>
+        <div style="margin-top:8px;font-size:14px;color:#7f8c8d;">Not talkative? <a href="recommender.html">Skip the chat and use the test wizard &rarr;</a></div>
     </div>
 </header>
 
@@ -897,9 +920,9 @@ footer {
 
     <label class="upload-zone" id="uploadZone">
         <div class="icon">&#128206;</div>
-        <div class="primary-text">Drop a CSV here, or click to browse</div>
-        <div class="secondary-text">First row should be column headers</div>
-        <input type="file" id="fileInput" accept=".csv,text/csv">
+        <div class="primary-text">Drop a CSV or Excel file here, or click to browse</div>
+        <div class="secondary-text">First row should be column headers &middot; .csv, .xlsx, .xls supported</div>
+        <input type="file" id="fileInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
     </label>
 
     <!-- Loaded data section -->
@@ -1407,6 +1430,23 @@ footer {
         filename: null
     };
 
+    // ---------- URL hash → auto-select test card (used by recommender CTAs) ----------
+    function applyHashTest() {
+        const m = (window.location.hash || '').match(/^#(?:config|test)-(.+)$/);
+        if (!m) return;
+        const slug = m[1];
+        const btn = document.querySelector('.test-btn[data-test="' + slug + '"]');
+        const dataLoaded = document.getElementById('dataSection').classList.contains('show');
+        if (btn && dataLoaded) {
+            btn.click();
+            const config = document.getElementById('config-' + slug);
+            setTimeout(function() {
+                if (config) config.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 120);
+        }
+    }
+    window.addEventListener('hashchange', applyHashTest);
+
     // ---------- Upload ----------
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
@@ -1430,27 +1470,57 @@ footer {
 
     function handleFile(file) {
         state.filename = file.name;
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            dynamicTyping: false,
-            complete: function(res) {
-                if (!res.data || res.data.length === 0) {
-                    alert('Pearl could not read any rows from this file. Make sure the first row contains column headers.');
-                    return;
-                }
-                state.rows = res.data;
-                detectColumns();
-                renderPreview();
-                populateSelectors();
-                document.getElementById('dataSection').classList.add('show');
-                document.getElementById('results').classList.remove('show');
-                document.getElementById('results').innerHTML = '';
-            },
-            error: function(err) {
-                alert('Error reading file: ' + err.message);
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+        const onParsed = function(res) {
+            if (!res.data || res.data.length === 0) {
+                alert('Pearl could not read any rows from this file. Make sure the first row contains column headers.');
+                return;
             }
-        });
+            state.rows = res.data;
+            detectColumns();
+            renderPreview();
+            populateSelectors();
+            document.getElementById('dataSection').classList.add('show');
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('results').innerHTML = '';
+            applyHashTest();
+        };
+
+        if (ext === 'xlsx' || ext === 'xls') {
+            if (typeof XLSX === 'undefined') {
+                alert('Excel reader (SheetJS) failed to load. Check your internet connection and reload the page, or save the file as CSV.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    if (!wb.SheetNames.length) throw new Error('No sheets in this workbook.');
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const csvText = XLSX.utils.sheet_to_csv(ws);
+                    Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        dynamicTyping: false,
+                        complete: onParsed,
+                        error: function(err) { alert('Error parsing converted data: ' + err.message); }
+                    });
+                } catch (err) {
+                    alert('Pearl could not read the Excel file: ' + err.message + '. Try saving it as .csv.');
+                }
+            };
+            reader.onerror = function() { alert('Could not read the file.'); };
+            reader.readAsArrayBuffer(file);
+        } else {
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                dynamicTyping: false,
+                complete: onParsed,
+                error: function(err) { alert('Error reading file: ' + err.message); }
+            });
+        }
     }
 
     // ---------- Column detection ----------
@@ -5664,6 +5734,33 @@ result_json = json.dumps(result)
         };
     }
 
+    const SUGGESTION_CHIPS = [
+        "Pick the right test for my data",
+        "Explain ANOVA vs MANOVA",
+        "How do I report this in APA?",
+        "Walk me through assumption checks",
+        "Help me design my study"
+    ];
+
+    function renderSuggestionChips() {
+        const wrap = document.createElement('div');
+        wrap.className = 'chat-chips';
+        wrap.id = 'chatChips';
+        SUGGESTION_CHIPS.forEach(text => {
+            const btn = document.createElement('button');
+            btn.className = 'chat-chip';
+            btn.textContent = text;
+            btn.addEventListener('click', function() {
+                wrap.remove();
+                chatInput.value = text;
+                sendMessage();
+            });
+            wrap.appendChild(btn);
+        });
+        chatMsgs.appendChild(wrap);
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    }
+
     function openChat() {
         chatWin.classList.add('open');
         chatToggle.classList.add('open');
@@ -5671,6 +5768,7 @@ result_json = json.dumps(result)
         if (chatMsgs.children.length === 0) {
             chatHistory = [];
             botSay("&#128008;&#8205;&#11035; Hi, I'm Pearl, Dr. Sekerli's stats tutor and Chico's little brother. How can I help?");
+            renderSuggestionChips();
         }
     }
     function closeChat() {
@@ -5734,6 +5832,8 @@ result_json = json.dumps(result)
     function sendMessage() {
         const text = chatInput.value.trim();
         if (!text || chatBusy) return;
+        const chips = document.getElementById('chatChips');
+        if (chips) chips.remove();
         chatBusy = true;
         chatSend.disabled = true;
         userSay(text);
