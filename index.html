@@ -968,6 +968,14 @@ footer {
                     <strong>Factor Analysis <span class="adv-pill">PY</span></strong>
                     <em>Find latent factors in 3+ continuous variables (varimax loadings, scree)</em>
                 </button>
+                <button class="test-btn test-btn-advanced" data-test="ancova">
+                    <strong>ANCOVA <span class="adv-pill">PY</span></strong>
+                    <em>Compare groups while controlling for one or more quantitative covariates</em>
+                </button>
+                <button class="test-btn test-btn-advanced" data-test="factorial">
+                    <strong>Factorial ANOVA <span class="adv-pill">PY</span></strong>
+                    <em>Two categorical IVs &mdash; tests main effects and the interaction</em>
+                </button>
             </div>
 
             <!-- Descriptives config -->
@@ -1156,6 +1164,48 @@ footer {
                 <button class="btn" id="run-factor" style="margin-top:14px;">Run factor analysis</button>
                 <div class="config-error" id="factor-error"></div>
             </div>
+
+            <!-- ANCOVA config -->
+            <div class="test-config" id="config-ancova">
+                <h4>Configure ANCOVA</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="ancova-dv">Dependent variable (quantitative)</label>
+                        <select id="ancova-dv"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="ancova-iv">Independent variable (categorical, 2+ levels)</label>
+                        <select id="ancova-iv"></select>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label style="display:block;font-size:12px;color:#b0b8c0;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Covariates (pick 1 or more quantitative variables to control for)</label>
+                    <div id="ancova-covariates" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+                <button class="btn" id="run-ancova" style="margin-top:14px;">Run ANCOVA</button>
+                <div class="config-error" id="ancova-error"></div>
+            </div>
+
+            <!-- Factorial ANOVA config -->
+            <div class="test-config" id="config-factorial">
+                <h4>Configure Factorial (Two-Way) ANOVA</h4>
+                <div class="config-row">
+                    <div class="config-field">
+                        <label for="factorial-dv">Dependent variable (quantitative)</label>
+                        <select id="factorial-dv"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="factorial-iv1">Factor A (categorical)</label>
+                        <select id="factorial-iv1"></select>
+                    </div>
+                    <div class="config-field">
+                        <label for="factorial-iv2">Factor B (categorical)</label>
+                        <select id="factorial-iv2"></select>
+                    </div>
+                </div>
+                <button class="btn" id="run-factorial" style="margin-top:14px;">Run factorial ANOVA</button>
+                <div class="config-error" id="factorial-error"></div>
+            </div>
         </div>
 
         <!-- Results -->
@@ -1338,6 +1388,14 @@ footer {
         fillSelect('manova-iv', categCols);
         fillPredictorChips('manova-dvs', quantCols);
         fillPredictorChips('factor-vars', quantCols);
+
+        // Phase 6 selectors
+        fillSelect('ancova-dv', quantCols);
+        fillSelect('ancova-iv', categCols);
+        fillPredictorChips('ancova-covariates', quantCols);
+        fillSelect('factorial-dv', quantCols);
+        fillSelect('factorial-iv1', categCols);
+        fillSelect('factorial-iv2', categCols, 1);
     }
 
     function refreshLogisticForY() {
@@ -1783,6 +1841,8 @@ footer {
     document.getElementById('run-logistic').addEventListener('click', runLogistic);
     document.getElementById('run-manova').addEventListener('click', runManova);
     document.getElementById('run-factor').addEventListener('click', runFactor);
+    document.getElementById('run-ancova').addEventListener('click', runAncova);
+    document.getElementById('run-factorial').addEventListener('click', runFactorial);
     document.getElementById('logistic-y').addEventListener('change', refreshLogisticForY);
 
     function runDescriptives() {
@@ -3239,6 +3299,509 @@ result_json = json.dumps(result)
         });
     }
 
+    // ---------- ANCOVA (Phase 6) ----------
+    async function runAncova() {
+        const dv = document.getElementById('ancova-dv').value;
+        const iv = document.getElementById('ancova-iv').value;
+        const covariates = Array.from(document.querySelectorAll('#ancova-covariates input:checked')).map(i => i.value);
+        const errEl = document.getElementById('ancova-error');
+        errEl.textContent = '';
+        if (!dv) return errEl.textContent = 'Pick a dependent variable.';
+        if (!iv) return errEl.textContent = 'Pick an independent variable.';
+        if (covariates.length === 0) return errEl.textContent = 'Pick at least one covariate.';
+        if (covariates.includes(dv)) return errEl.textContent = 'A covariate cannot be the same as the DV.';
+
+        const ivColumn = getColumn(iv);
+        if (!ivColumn || ivColumn.type !== 'categ') return errEl.textContent = 'IV must be categorical.';
+        const levels = Array.from(new Set(ivColumn.categValues));
+        if (levels.length < 2) return errEl.textContent = `IV has only ${levels.length} level — need at least 2.`;
+
+        const allCols = [dv, iv, ...covariates];
+        const ds = buildPyDataset(allCols);
+        if (ds.n < levels.length + covariates.length + 2) return errEl.textContent = `After dropping rows with missing values, only ${ds.n} rows remain — too few for ANCOVA.`;
+
+        await runWithPyodide('ancova', 'ancova-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('dv_col', dv);
+            pyodide.globals.set('iv_col', iv);
+            pyodide.globals.set('cov_cols', pyodide.toPy(covariates));
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+from statsmodels.formula.api import ols
+import statsmodels.api as sm
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+df[dv_col] = pd.to_numeric(df[dv_col], errors='coerce')
+covs = list(cov_cols)
+for c in covs:
+    df[c] = pd.to_numeric(df[c], errors='coerce')
+df = df.dropna()
+
+def Q(name): return 'Q("' + str(name).replace('"', '\\\\"') + '")'
+
+cov_terms = ' + '.join(Q(c) for c in covs)
+formula_main = f'{Q(dv_col)} ~ C({Q(iv_col)}) + {cov_terms}'
+formula_full = f'{Q(dv_col)} ~ C({Q(iv_col)}) * ({cov_terms})'
+
+m_main = ols(formula_main, data=df).fit()
+m_full = ols(formula_full, data=df).fit()
+
+# Type II ANOVA on the main-effects (no-interaction) model — that's the standard ANCOVA table
+anova = sm.stats.anova_lm(m_main, typ=2)
+ss_total = float(anova['sum_sq'].sum())
+
+terms = []
+for term in anova.index:
+    row = anova.loc[term]
+    ss = float(row['sum_sq'])
+    df_t = float(row['df']) if 'df' in row else None
+    F = float(row['F']) if not pd.isna(row['F']) else None
+    p = float(row['PR(>F)']) if not pd.isna(row['PR(>F)']) else None
+    partial_eta2 = ss / (ss + float(anova.loc['Residual', 'sum_sq'])) if term != 'Residual' else None
+    eta2 = ss / ss_total if term != 'Residual' else None
+    terms.append({
+        'name': str(term),
+        'is_iv': term.startswith('C(') and iv_col.replace('"', '\\\\"') in term,
+        'is_residual': term == 'Residual',
+        'ss': ss, 'df': df_t, 'F': F, 'p': p,
+        'eta2': eta2, 'partial_eta2': partial_eta2
+    })
+
+# Homogeneity of regression slopes: compare full (with interaction) vs main-effects model
+# If interaction significant, ANCOVA assumption is violated.
+hor_test = sm.stats.anova_lm(m_main, m_full)
+# F is in row 1, "F" column
+hor_F = float(hor_test['F'].iloc[1]) if not pd.isna(hor_test['F'].iloc[1]) else None
+hor_p = float(hor_test['Pr(>F)'].iloc[1]) if not pd.isna(hor_test['Pr(>F)'].iloc[1]) else None
+
+# Group means: raw + adjusted (estimated marginal means at sample-mean covariate values)
+groups = sorted(df[iv_col].astype(str).unique())
+raw = {g: {'mean': float(df[df[iv_col].astype(str) == g][dv_col].mean()),
+           'sd': float(df[df[iv_col].astype(str) == g][dv_col].std(ddof=1)),
+           'n': int((df[iv_col].astype(str) == g).sum())} for g in groups}
+
+# Adjusted means: predict at each group while covariates held at sample means
+cov_means = {c: float(df[c].mean()) for c in covs}
+adjusted = {}
+for g in groups:
+    pred_row = {iv_col: g}
+    pred_row.update(cov_means)
+    pred_df = pd.DataFrame([pred_row])
+    pred_df[iv_col] = pd.Categorical(pred_df[iv_col], categories=df[iv_col].astype(str).unique())
+    # Use the model's predict
+    yhat = float(m_main.predict(pred_df).iloc[0])
+    adjusted[g] = yhat
+
+# Pairwise differences in adjusted means with Bonferroni
+from scipy.stats import t as t_dist
+mse = float(m_main.mse_resid)
+n_total = int(m_main.nobs)
+df_resid = float(m_main.df_resid)
+
+pairwise = []
+n_comparisons = len(groups) * (len(groups) - 1) / 2
+alpha_bon = 0.05 / max(n_comparisons, 1)
+for i, g1 in enumerate(groups):
+    for g2 in groups[i+1:]:
+        n1 = raw[g1]['n']; n2 = raw[g2]['n']
+        diff = adjusted[g1] - adjusted[g2]
+        se = (mse * (1.0/n1 + 1.0/n2)) ** 0.5
+        t_stat = diff / se if se else 0
+        p_raw = 2 * (1 - t_dist.cdf(abs(t_stat), df_resid))
+        p_bon = min(p_raw * n_comparisons, 1.0)
+        pairwise.append({
+            'g1': g1, 'g2': g2, 'diff': diff, 'se': se,
+            't': t_stat, 'p': p_raw, 'p_bon': p_bon
+        })
+
+result = {
+    'dv': dv_col, 'iv': iv_col, 'covariates': covs, 'n': n_total,
+    'groups': groups,
+    'raw_means': raw, 'adjusted_means': adjusted, 'cov_means': cov_means,
+    'r2': float(m_main.rsquared), 'adj_r2': float(m_main.rsquared_adj),
+    'F_overall': float(m_main.fvalue), 'p_overall': float(m_main.f_pvalue),
+    'df_model': float(m_main.df_model), 'df_resid': df_resid,
+    'terms': terms,
+    'hor_F': hor_F, 'hor_p': hor_p,
+    'pairwise': pairwise, 'alpha_bonferroni': alpha_bon
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderAncova(result);
+        });
+    }
+
+    function renderAncova(res) {
+        const ivTerm = res.terms.find(t => t.is_iv);
+        const residualTerm = res.terms.find(t => t.is_residual);
+        const overallSig = ivTerm && ivTerm.p !== null && ivTerm.p < 0.05;
+
+        let termRows = '';
+        res.terms.forEach(t => {
+            if (t.is_residual) return;
+            const sig = t.p !== null && t.p < 0.05;
+            const niceName = t.name.replace(/^C\(Q\("(.+?)"\)\)/, '$1').replace(/^Q\("(.+?)"\)/, '$1');
+            termRows += `<tr>
+                <td><strong>${escapeHtml(niceName)}</strong>${t.is_iv ? ' <span style="color:#7f8c8d;font-size:11px;">(IV)</span>' : ' <span style="color:#7f8c8d;font-size:11px;">(covariate)</span>'}</td>
+                <td class="num">${fmt(t.ss)}</td>
+                <td class="num">${fmt(t.df, 1)}</td>
+                <td class="num">${fmt(t.F)}</td>
+                <td class="num">${fmtP(t.p)}</td>
+                <td class="num">${fmt(t.partial_eta2)}</td>
+                <td><span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+        if (residualTerm) {
+            termRows += `<tr>
+                <td><strong>Residual</strong></td>
+                <td class="num">${fmt(residualTerm.ss)}</td>
+                <td class="num">${fmt(residualTerm.df, 1)}</td>
+                <td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td>&mdash;</td>
+            </tr>`;
+        }
+
+        let meanRows = '';
+        res.groups.forEach(g => {
+            meanRows += `<tr>
+                <td><strong>${escapeHtml(g)}</strong></td>
+                <td class="num">${fmt(res.raw_means[g].mean)}</td>
+                <td class="num">${fmt(res.raw_means[g].sd)}</td>
+                <td class="num">${res.raw_means[g].n}</td>
+                <td class="num"><strong>${fmt(res.adjusted_means[g])}</strong></td>
+            </tr>`;
+        });
+
+        let pairRows = '';
+        res.pairwise.forEach(pw => {
+            const sig = pw.p_bon < 0.05;
+            pairRows += `<tr>
+                <td><strong>${escapeHtml(pw.g1)}</strong> vs <strong>${escapeHtml(pw.g2)}</strong></td>
+                <td class="num">${fmt(pw.diff)}</td>
+                <td class="num">${fmt(pw.se)}</td>
+                <td class="num">${fmt(pw.t)}</td>
+                <td class="num">${fmtP(pw.p)}</td>
+                <td class="num">${fmtP(pw.p_bon)}</td>
+                <td><span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+
+        const horViolated = res.hor_p !== null && res.hor_p < 0.05;
+        const covMeansStr = res.covariates.map(c => `${escapeHtml(c)}=${fmt(res.cov_means[c])}`).join(', ');
+
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Analysis of Covariance (ANCOVA)</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Effect of <strong>${escapeHtml(res.iv)}</strong> on <strong>${escapeHtml(res.dv)}</strong>, controlling for ${res.covariates.map(c => `<em>${escapeHtml(c)}</em>`).join(', ')}. N = ${res.n}, ${res.groups.length} groups.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">ANCOVA table (Type II sums of squares)</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead><tr>
+                <th>Term</th><th class="num">SS</th><th class="num">df</th><th class="num">F</th><th class="num">p</th><th class="num">Partial &eta;&sup2;</th><th>Sig.</th>
+            </tr></thead><tbody>${termRows}</tbody></table>
+            </div>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Overall model: F(${fmt(res.df_model, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(res.F_overall)}, p ${apaP(res.p_overall)}, R&sup2; = ${fmt(res.r2)}, adj R&sup2; = ${fmt(res.adj_r2)}.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Group means (raw vs. adjusted)</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Group</th><th class="num">Raw M</th><th class="num">SD</th><th class="num">n</th><th class="num">Adjusted M</th>
+            </tr></thead><tbody>${meanRows}</tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Adjusted means evaluated at sample-mean covariate values: ${covMeansStr}.</p>
+
+            ${res.pairwise.length ? `
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Pairwise comparisons of adjusted means (Bonferroni)</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Comparison</th><th class="num">Diff (adj)</th><th class="num">SE</th><th class="num">t</th><th class="num">p (raw)</th><th class="num">p (Bonf.)</th><th>Sig.</th>
+            </tr></thead><tbody>${pairRows}</tbody></table>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Bonferroni-corrected &alpha; = ${fmt(res.alpha_bonferroni, 4)} for ${res.pairwise.length} comparison${res.pairwise.length === 1 ? '' : 's'}.</p>
+            ` : ''}
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Assumption check &mdash; homogeneity of regression slopes</h4>
+            <table class="stats-table"><thead><tr>
+                <th>Check</th><th class="num">F</th><th class="num">p</th><th>Status</th><th>If violated</th>
+            </tr></thead><tbody>
+                <tr>
+                    <td>IV &times; covariate(s) interaction (full model vs. ANCOVA model)</td>
+                    <td class="num">${fmt(res.hor_F)}</td>
+                    <td class="num">${fmtP(res.hor_p)}</td>
+                    <td>${horViolated ? '<span class="sig-no">&#9888; violated</span>' : '<span class="sig-yes">&#10003; OK</span>'}</td>
+                    <td style="font-size:12px;color:#b0b8c0;">If violated, the IV's effect depends on the covariate &mdash; report a moderated regression instead, or use Johnson-Neyman.</td>
+                </tr>
+            </tbody></table>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> After controlling for ${res.covariates.map(escapeHtml).join(', ')}, ${escapeHtml(res.iv)} has a <span class="${overallSig ? 'sig-yes' : 'sig-no'}">${overallSig ? 'statistically significant' : 'non-significant'}</span> effect on ${escapeHtml(res.dv)}, F(${ivTerm ? fmt(ivTerm.df, 1) : '&mdash;'}, ${fmt(res.df_resid, 1)}) = ${ivTerm ? fmt(ivTerm.F) : '&mdash;'}, p ${ivTerm ? apaP(ivTerm.p) : ''}, partial &eta;&sup2; = ${ivTerm ? fmt(ivTerm.partial_eta2) : ''}. ${horViolated ? '<span class="sig-no">⚠ The homogeneity-of-slopes assumption was violated</span> &mdash; the IV&rsquo;s effect varies by covariate level, so the ANCOVA result above should be interpreted with caution.' : 'The homogeneity-of-slopes assumption holds.'} Adjusted means show what each group&rsquo;s mean would be if all groups had the same average covariate values.
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing value across the DV, IV, or covariates.</p>
+            ${apaButton('ancova', res, {})}
+        </div>`;
+        showResults(html);
+    }
+
+    // ---------- Factorial (Two-Way) ANOVA (Phase 6) ----------
+    async function runFactorial() {
+        const dv = document.getElementById('factorial-dv').value;
+        const iv1 = document.getElementById('factorial-iv1').value;
+        const iv2 = document.getElementById('factorial-iv2').value;
+        const errEl = document.getElementById('factorial-error');
+        errEl.textContent = '';
+        if (!dv) return errEl.textContent = 'Pick a dependent variable.';
+        if (!iv1 || !iv2) return errEl.textContent = 'Pick both Factor A and Factor B.';
+        if (iv1 === iv2) return errEl.textContent = 'Factor A and Factor B must be different.';
+
+        const ds = buildPyDataset([dv, iv1, iv2]);
+        const iv1Levels = Array.from(new Set(getColumn(iv1).categValues));
+        const iv2Levels = Array.from(new Set(getColumn(iv2).categValues));
+        const minCells = iv1Levels.length * iv2Levels.length;
+        if (ds.n < minCells * 2) return errEl.textContent = `After dropping missing values, ${ds.n} rows remain — too few for a ${iv1Levels.length}×${iv2Levels.length} design.`;
+
+        await runWithPyodide('factorial', 'factorial-error', async (pyodide) => {
+            pyodide.globals.set('df_data', pyodide.toPy(ds.data));
+            pyodide.globals.set('dv_col', dv);
+            pyodide.globals.set('iv1_col', iv1);
+            pyodide.globals.set('iv2_col', iv2);
+
+            const py = `
+import pandas as pd
+import numpy as np
+import json
+from statsmodels.formula.api import ols
+import statsmodels.api as sm
+
+df = pd.DataFrame({k: list(v) for k, v in df_data.items()})
+df[dv_col] = pd.to_numeric(df[dv_col], errors='coerce')
+df = df.dropna()
+
+def Q(name): return 'Q("' + str(name).replace('"', '\\\\"') + '")'
+
+formula = f'{Q(dv_col)} ~ C({Q(iv1_col)}) * C({Q(iv2_col)})'
+model = ols(formula, data=df).fit()
+anova = sm.stats.anova_lm(model, typ=2)
+
+ss_resid = float(anova.loc['Residual', 'sum_sq'])
+ss_total = float(anova['sum_sq'].sum())
+
+terms = []
+for term in anova.index:
+    row = anova.loc[term]
+    ss = float(row['sum_sq'])
+    df_t = float(row['df'])
+    F = float(row['F']) if not pd.isna(row['F']) else None
+    p = float(row['PR(>F)']) if not pd.isna(row['PR(>F)']) else None
+    partial = ss / (ss + ss_resid) if term != 'Residual' else None
+    eta2 = ss / ss_total
+    role = 'residual' if term == 'Residual' else ('interaction' if ':' in term else ('main_a' if iv1_col.replace('"', '\\\\"') in term else 'main_b'))
+    terms.append({
+        'name': str(term), 'role': role,
+        'ss': ss, 'df': df_t, 'F': F, 'p': p,
+        'eta2': eta2, 'partial_eta2': partial
+    })
+
+# Cell means (each combination of IV1 × IV2)
+iv1_levels = sorted(df[iv1_col].astype(str).unique())
+iv2_levels = sorted(df[iv2_col].astype(str).unique())
+cells = {}
+for a in iv1_levels:
+    cells[a] = {}
+    for b in iv2_levels:
+        sub = df[(df[iv1_col].astype(str) == a) & (df[iv2_col].astype(str) == b)][dv_col]
+        if len(sub) > 0:
+            cells[a][b] = {'mean': float(sub.mean()), 'sd': float(sub.std(ddof=1)) if len(sub) > 1 else 0.0, 'n': int(len(sub))}
+        else:
+            cells[a][b] = {'mean': None, 'sd': None, 'n': 0}
+
+# Marginal means
+marg_a = {a: float(df[df[iv1_col].astype(str) == a][dv_col].mean()) for a in iv1_levels}
+marg_b = {b: float(df[df[iv2_col].astype(str) == b][dv_col].mean()) for b in iv2_levels}
+grand = float(df[dv_col].mean())
+
+result = {
+    'dv': dv_col, 'iv1': iv1_col, 'iv2': iv2_col, 'n': int(len(df)),
+    'iv1_levels': iv1_levels, 'iv2_levels': iv2_levels,
+    'r2': float(model.rsquared), 'adj_r2': float(model.rsquared_adj),
+    'F_overall': float(model.fvalue), 'p_overall': float(model.f_pvalue),
+    'df_model': float(model.df_model), 'df_resid': float(model.df_resid),
+    'terms': terms,
+    'cells': cells,
+    'marg_a': marg_a, 'marg_b': marg_b, 'grand_mean': grand
+}
+result_json = json.dumps(result)
+`;
+            await pyodide.runPythonAsync(py);
+            const result = JSON.parse(pyodide.globals.get('result_json'));
+            renderFactorial(result);
+        });
+    }
+
+    function renderFactorial(res) {
+        const mainA = res.terms.find(t => t.role === 'main_a');
+        const mainB = res.terms.find(t => t.role === 'main_b');
+        const inter = res.terms.find(t => t.role === 'interaction');
+        const residual = res.terms.find(t => t.role === 'residual');
+
+        let termRows = '';
+        res.terms.forEach(t => {
+            if (t.role === 'residual') return;
+            const sig = t.p !== null && t.p < 0.05;
+            let label;
+            if (t.role === 'main_a') label = `<strong>${escapeHtml(res.iv1)}</strong> <span style="color:#7f8c8d;font-size:11px;">(main effect)</span>`;
+            else if (t.role === 'main_b') label = `<strong>${escapeHtml(res.iv2)}</strong> <span style="color:#7f8c8d;font-size:11px;">(main effect)</span>`;
+            else label = `<strong>${escapeHtml(res.iv1)} &times; ${escapeHtml(res.iv2)}</strong> <span style="color:#7f8c8d;font-size:11px;">(interaction)</span>`;
+            termRows += `<tr>
+                <td>${label}</td>
+                <td class="num">${fmt(t.ss)}</td>
+                <td class="num">${fmt(t.df, 1)}</td>
+                <td class="num">${fmt(t.F)}</td>
+                <td class="num">${fmtP(t.p)}</td>
+                <td class="num">${fmt(t.partial_eta2)}</td>
+                <td><span class="${sig ? 'sig-yes' : 'sig-no'}">${sig ? 'sig.' : 'ns'}</span></td>
+            </tr>`;
+        });
+        if (residual) {
+            termRows += `<tr>
+                <td><strong>Residual</strong></td>
+                <td class="num">${fmt(residual.ss)}</td>
+                <td class="num">${fmt(residual.df, 1)}</td>
+                <td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td>&mdash;</td>
+            </tr>`;
+        }
+
+        // Cell means table
+        let cellHeader = `<tr><th>${escapeHtml(res.iv1)} \\ ${escapeHtml(res.iv2)}</th>`;
+        res.iv2_levels.forEach(b => cellHeader += `<th class="num">${escapeHtml(b)}</th>`);
+        cellHeader += `<th class="num"><em>Marginal</em></th></tr>`;
+        let cellRows = '';
+        res.iv1_levels.forEach(a => {
+            cellRows += `<tr><td><strong>${escapeHtml(a)}</strong></td>`;
+            res.iv2_levels.forEach(b => {
+                const cell = res.cells[a][b];
+                cellRows += `<td class="num">${cell.mean === null ? '&mdash;' : `${fmt(cell.mean)} <span style="color:#7f8c8d;font-size:11px;">(${fmt(cell.sd)}, n=${cell.n})</span>`}</td>`;
+            });
+            cellRows += `<td class="num"><em>${fmt(res.marg_a[a])}</em></td></tr>`;
+        });
+        cellRows += `<tr><td><em>Marginal</em></td>`;
+        res.iv2_levels.forEach(b => cellRows += `<td class="num"><em>${fmt(res.marg_b[b])}</em></td>`);
+        cellRows += `<td class="num"><strong>${fmt(res.grand_mean)}</strong></td></tr>`;
+
+        let interpParts = [];
+        if (inter && inter.p !== null && inter.p < 0.05) {
+            interpParts.push(`The <strong>interaction is significant</strong>, F(${fmt(inter.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(inter.F)}, p ${apaP(inter.p)}, partial η² = ${fmt(inter.partial_eta2)} — the effect of ${escapeHtml(res.iv1)} depends on the level of ${escapeHtml(res.iv2)} (and vice versa). When the interaction is significant, focus your interpretation on simple effects rather than main effects.`);
+        } else {
+            interpParts.push(`The interaction is not significant, F(${inter ? fmt(inter.df, 1) : '&mdash;'}, ${fmt(res.df_resid, 1)}) = ${inter ? fmt(inter.F) : '&mdash;'}, p ${inter ? apaP(inter.p) : ''} — main effects can be interpreted on their own.`);
+        }
+        if (mainA) {
+            const aSig = mainA.p !== null && mainA.p < 0.05;
+            interpParts.push(`Main effect of <strong>${escapeHtml(res.iv1)}</strong>: ${aSig ? 'significant' : 'ns'}, F(${fmt(mainA.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(mainA.F)}, p ${apaP(mainA.p)}, partial η² = ${fmt(mainA.partial_eta2)}.`);
+        }
+        if (mainB) {
+            const bSig = mainB.p !== null && mainB.p < 0.05;
+            interpParts.push(`Main effect of <strong>${escapeHtml(res.iv2)}</strong>: ${bSig ? 'significant' : 'ns'}, F(${fmt(mainB.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(mainB.F)}, p ${apaP(mainB.p)}, partial η² = ${fmt(mainB.partial_eta2)}.`);
+        }
+
+        const html = `
+        <div class="result-card">
+            <div class="result-label">Pearl's Output &middot; <span style="color:#f39c12;">PYTHON</span></div>
+            <h3>Factorial (Two-Way) ANOVA</h3>
+            <p style="color:#b0b8c0;font-size:14px;margin-bottom:14px;">Effect of <strong>${escapeHtml(res.iv1)}</strong> (${res.iv1_levels.length} levels) and <strong>${escapeHtml(res.iv2)}</strong> (${res.iv2_levels.length} levels) on <strong>${escapeHtml(res.dv)}</strong>. Design: ${res.iv1_levels.length}×${res.iv2_levels.length}. N = ${res.n}.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;">ANOVA table (Type II sums of squares)</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead><tr>
+                <th>Term</th><th class="num">SS</th><th class="num">df</th><th class="num">F</th><th class="num">p</th><th class="num">Partial &eta;&sup2;</th><th>Sig.</th>
+            </tr></thead><tbody>${termRows}</tbody></table>
+            </div>
+            <p style="color:#7f8c8d;font-size:12px;margin-top:6px;">Overall model: F(${fmt(res.df_model, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(res.F_overall)}, p ${apaP(res.p_overall)}, R&sup2; = ${fmt(res.r2)}, adj R&sup2; = ${fmt(res.adj_r2)}.</p>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Cell means (M, SD, n)</h4>
+            <div class="coef-table-wrap">
+            <table class="stats-table"><thead>${cellHeader}</thead><tbody>${cellRows}</tbody></table>
+            </div>
+
+            <h4 style="color:#c0392b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:18px 0 8px;">Interaction plot</h4>
+            <div class="chart-grid">
+                <div class="chart-tile"><div class="tile-label">Cell means: ${escapeHtml(res.iv1)} on x-axis, separate line per ${escapeHtml(res.iv2)} level. Parallel lines = no interaction.</div><canvas id="factorial-interplot"></canvas></div>
+            </div>
+
+            <div class="interpretation">
+                <strong>Interpretation:</strong> ${interpParts.join(' ')}
+            </div>
+
+            <p style="color:#7f8c8d;font-size:13px;margin-top:12px;">Pearl drops rows with any missing value across DV, Factor A, or Factor B.</p>
+            ${apaButton('factorial', res, {})}
+        </div>`;
+        showResults(html);
+        drawInteractionPlot(document.getElementById('factorial-interplot'), res);
+    }
+
+    function drawInteractionPlot(canvas, res) {
+        const s = chartSetup(canvas, 320, { l: 60, r: 140, t: 14, b: 60 });
+        if (!s) return;
+        const allMeans = [];
+        res.iv1_levels.forEach(a => res.iv2_levels.forEach(b => {
+            if (res.cells[a][b].mean !== null) allMeans.push(res.cells[a][b].mean);
+        }));
+        let yMin = Math.min(...allMeans), yMax = Math.max(...allMeans);
+        const ypad = (yMax - yMin) * 0.1 || 1;
+        yMin -= ypad; yMax += ypad;
+        drawAxes(s, 0, res.iv1_levels.length, yMin, yMax, '', escapeHtmlForChart(res.dv), true);
+        const { ctx, pad, innerW, innerH, h, w } = s;
+        const slot = innerW / res.iv1_levels.length;
+        // x-tick labels (IV1 levels)
+        ctx.fillStyle = ChartColors.text;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        res.iv1_levels.forEach((a, i) => {
+            const cx = pad.l + i * slot + slot / 2;
+            const t = String(a).length > 14 ? String(a).slice(0, 13) + '…' : String(a);
+            ctx.save();
+            ctx.translate(cx, h - pad.b + 6);
+            if (res.iv1_levels.length > 4) ctx.rotate(-Math.PI / 8);
+            ctx.fillText(t, 0, 0);
+            ctx.restore();
+        });
+        const palette = [ChartColors.primary, ChartColors.secondary, ChartColors.accent, ChartColors.accent2, ChartColors.accent3];
+        res.iv2_levels.forEach((b, j) => {
+            const color = palette[j % palette.length];
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+            ctx.beginPath();
+            res.iv1_levels.forEach((a, i) => {
+                const cell = res.cells[a][b];
+                if (cell.mean === null) return;
+                const cx = pad.l + i * slot + slot / 2;
+                const cy = h - pad.b - ((cell.mean - yMin) / (yMax - yMin)) * innerH;
+                if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+            });
+            ctx.stroke();
+            // points
+            res.iv1_levels.forEach((a, i) => {
+                const cell = res.cells[a][b];
+                if (cell.mean === null) return;
+                const cx = pad.l + i * slot + slot / 2;
+                const cy = h - pad.b - ((cell.mean - yMin) / (yMax - yMin)) * innerH;
+                ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
+            });
+            // legend
+            const ly = pad.t + 14 + j * 18;
+            ctx.fillStyle = color;
+            ctx.fillRect(w - pad.r + 6, ly - 6, 12, 12);
+            ctx.fillStyle = ChartColors.text;
+            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            const tt = String(b).length > 14 ? String(b).slice(0, 13) + '…' : String(b);
+            ctx.fillText(tt, w - pad.r + 22, ly);
+        });
+        // x-axis title
+        ctx.fillStyle = ChartColors.text;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillText(res.iv1, pad.l + innerW / 2, h - 4);
+    }
+
+    function escapeHtmlForChart(s) { return String(s); }
+
     function showResults(html) {
         const r = document.getElementById('results');
         r.innerHTML = html;
@@ -3648,6 +4211,22 @@ result_json = json.dumps(result)
         if (test === 'factor') {
             const totalVar = (res.cum_pct_var[res.cum_pct_var.length - 1] * 100).toFixed(1);
             return `An exploratory factor analysis with ${res.rotation === 'none' ? 'no rotation' : res.rotation + ' rotation'} extracted ${res.n_factors} factor${res.n_factors === 1 ? '' : 's'} from ${res.p} variables (N = ${res.n}). KMO = ${fmt(res.kmo)}; Bartlett's test of sphericity, χ²(${res.bartlett_df}) = ${fmt(res.bartlett_chi2)}, p ${apaP(res.bartlett_p)}. The ${res.n_factors}-factor solution explained ${totalVar}% of the total variance.`;
+        }
+        if (test === 'ancova') {
+            const ivTerm = res.terms.find(t => t.is_iv);
+            if (!ivTerm) return '';
+            const sig = ivTerm.p !== null && ivTerm.p < 0.05;
+            return `An analysis of covariance (ANCOVA) tested the effect of ${res.iv} on ${res.dv}, controlling for ${res.covariates.join(', ')} (N = ${res.n}). After adjusting for the covariate(s), the effect of ${res.iv} was ${sig ? '' : 'not '}statistically significant, F(${fmt(ivTerm.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(ivTerm.F)}, p ${apaP(ivTerm.p)}, partial η² = ${fmt(ivTerm.partial_eta2)}. The full model explained ${(res.r2 * 100).toFixed(1)}% of the variance (R² = ${fmt(res.r2)}, adj R² = ${fmt(res.adj_r2)}).`;
+        }
+        if (test === 'factorial') {
+            const mainA = res.terms.find(t => t.role === 'main_a');
+            const mainB = res.terms.find(t => t.role === 'main_b');
+            const inter = res.terms.find(t => t.role === 'interaction');
+            const lines = [`A two-way (factorial) ANOVA tested the effects of ${res.iv1} and ${res.iv2} on ${res.dv} (N = ${res.n}; design: ${res.iv1_levels.length}×${res.iv2_levels.length}).`];
+            if (mainA) lines.push(`Main effect of ${res.iv1}: F(${fmt(mainA.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(mainA.F)}, p ${apaP(mainA.p)}, partial η² = ${fmt(mainA.partial_eta2)}.`);
+            if (mainB) lines.push(`Main effect of ${res.iv2}: F(${fmt(mainB.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(mainB.F)}, p ${apaP(mainB.p)}, partial η² = ${fmt(mainB.partial_eta2)}.`);
+            if (inter) lines.push(`${res.iv1} × ${res.iv2} interaction: F(${fmt(inter.df, 1)}, ${fmt(res.df_resid, 1)}) = ${fmt(inter.F)}, p ${apaP(inter.p)}, partial η² = ${fmt(inter.partial_eta2)}.`);
+            return lines.join(' ');
         }
         return '';
     }
