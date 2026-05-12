@@ -5829,17 +5829,209 @@ result_json = json.dumps(result)
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
 
-    function sendMessage() {
-        const text = chatInput.value.trim();
-        if (!text || chatBusy) return;
-        const chips = document.getElementById('chatChips');
-        if (chips) chips.remove();
-        chatBusy = true;
-        chatSend.disabled = true;
-        userSay(text);
-        chatHistory.push({ role: 'user', content: text });
-        chatInput.value = '';
+    // ---------- Client-tool wiring (Pearl as agent) ----------
+    // Maps each test slug to the DOM IDs of its dropdowns and pill containers.
+    const TEST_PARAMS = {
+        descriptives: { selects: {}, multi: {} },
+        ttest:        { selects: { dv: 'ttest-dv', iv: 'ttest-iv' }, multi: {} },
+        correlation:  { selects: { x: 'corr-x', y: 'corr-y', method: 'corr-method' }, multi: {} },
+        anova:        { selects: { dv: 'anova-dv', iv: 'anova-iv' }, multi: {} },
+        chisquare:    { selects: { var1: 'chi-var1', var2: 'chi-var2' }, multi: {} },
+        regression:   { selects: { x: 'reg-x', y: 'reg-y' }, multi: {} },
+        multireg:     { selects: { dv: 'multireg-y' }, multi: { predictors: 'multireg-predictors' } },
+        logistic:     { selects: { dv: 'logistic-y', positive: 'logistic-positive' }, multi: { predictors: 'logistic-predictors' } },
+        manova:       { selects: { iv: 'manova-iv' }, multi: { dvs: 'manova-dvs' } },
+        factor:       { selects: { nfactors: 'factor-nfactors', rotation: 'factor-rotation' }, multi: { variables: 'factor-vars' } },
+        ancova:       { selects: { dv: 'ancova-dv', iv: 'ancova-iv' }, multi: { covariates: 'ancova-covariates' } },
+        factorial:    { selects: { dv: 'factorial-dv', iv1: 'factorial-iv1', iv2: 'factorial-iv2' }, multi: {} },
+        pairedt:      { selects: { v1: 'pairedt-v1', v2: 'pairedt-v2' }, multi: {} },
+        mannwhitney:  { selects: { dv: 'mannwhitney-dv', iv: 'mannwhitney-iv' }, multi: {} },
+        wilcoxon:     { selects: { v1: 'wilcoxon-v1', v2: 'wilcoxon-v2' }, multi: {} },
+        kruskal:      { selects: { dv: 'kruskal-dv', iv: 'kruskal-iv' }, multi: {} },
+        cronbach:     { selects: {}, multi: { items: 'cronbach-items' } },
+        rmanova:      { selects: {}, multi: { measures: 'rmanova-measures' } },
+        multinom:     { selects: { dv: 'multinom-y', reference: 'multinom-reference' }, multi: { predictors: 'multinom-predictors' } }
+    };
 
+    function flashToolCall(label) {
+        const chip = document.createElement('div');
+        chip.className = 'chat-msg bot';
+        chip.style.opacity = '0.85';
+        chip.style.fontStyle = 'italic';
+        chip.style.fontSize = '13px';
+        chip.style.background = '#2c3a48';
+        chip.style.borderLeft = '3px solid #e74c3c';
+        chip.innerHTML = '&#128008; ' + escapeHtml(label);
+        chatMsgs.appendChild(chip);
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        return chip;
+    }
+    function collapseFlash(chip, doneLabel) {
+        if (!chip) return;
+        chip.style.opacity = '0.6';
+        chip.style.fontSize = '12px';
+        chip.innerHTML = '&#10003; ' + escapeHtml(doneLabel);
+    }
+
+    function doSelectTest(testId) {
+        const btn = document.querySelector('.test-btn[data-test="' + testId + '"]');
+        if (!btn) return { ok: false, error: 'Unknown test: ' + testId };
+        btn.click();
+        const card = document.getElementById('config-' + testId);
+        if (card) setTimeout(function(){ card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+        return { ok: true, message: 'Opened ' + testId + ' card.' };
+    }
+
+    function doConfigureTest(testId, params) {
+        const spec = TEST_PARAMS[testId];
+        if (!spec) return { ok: false, error: 'Unknown test: ' + testId };
+        if (!params || typeof params !== 'object') return { ok: false, error: 'params must be an object.' };
+        const applied = [];
+        const skipped = [];
+
+        Object.keys(spec.selects).forEach(function(key){
+            if (!(key in params)) return;
+            const sel = document.getElementById(spec.selects[key]);
+            if (!sel) { skipped.push(key + ' (no element)'); return; }
+            const val = String(params[key]);
+            const hasOpt = Array.from(sel.options).some(function(o){ return o.value === val; });
+            if (!hasOpt) { skipped.push(key + '="' + val + '" (not a valid option)'); return; }
+            sel.value = val;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            applied.push(key + '=' + val);
+        });
+
+        Object.keys(spec.multi).forEach(function(key){
+            if (!(key in params)) return;
+            const cont = document.getElementById(spec.multi[key]);
+            if (!cont) { skipped.push(key + ' (no container)'); return; }
+            const wanted = Array.isArray(params[key]) ? params[key].map(String) : [String(params[key])];
+            const inputs = cont.querySelectorAll('input[type="checkbox"]');
+            const matchedVals = [];
+            inputs.forEach(function(inp){
+                const want = wanted.indexOf(inp.value) !== -1;
+                if (inp.checked !== want) {
+                    inp.checked = want;
+                    inp.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                if (want) matchedVals.push(inp.value);
+            });
+            const missed = wanted.filter(function(w){ return matchedVals.indexOf(w) === -1; });
+            if (missed.length) skipped.push(key + ' missing: ' + missed.join(', '));
+            applied.push(key + '=[' + matchedVals.join(', ') + ']');
+        });
+
+        let msg = 'Configured ' + testId + ': ' + (applied.join('; ') || 'no params applied');
+        if (skipped.length) msg += '. WARNINGS: ' + skipped.join('; ');
+        return { ok: true, message: msg };
+    }
+
+    function doRunTest(testId) {
+        return new Promise(function(resolve){
+            const runBtn = document.getElementById('run-' + testId);
+            if (!runBtn) { resolve({ ok: false, error: 'No Run button for ' + testId }); return; }
+            const before = lastResultSummary ? JSON.stringify(lastResultSummary) : null;
+            runBtn.click();
+            // Poll for new result. Pyodide tests can take 30+ sec on first click.
+            const start = Date.now();
+            const timeoutMs = 45000;
+            const tick = function(){
+                const cur = lastResultSummary ? JSON.stringify(lastResultSummary) : null;
+                const errEl = document.getElementById(testId + '-error');
+                const errMsg = errEl ? errEl.textContent.trim() : '';
+                if (cur && cur !== before) {
+                    resolve({ ok: true, test: lastResultSummary.test, interpretation: lastResultSummary.interpretation });
+                    return;
+                }
+                if (errMsg) {
+                    resolve({ ok: false, error: 'Test could not run: ' + errMsg });
+                    return;
+                }
+                if (Date.now() - start > timeoutMs) {
+                    resolve({ ok: false, error: 'Timed out waiting for result (45s).' });
+                    return;
+                }
+                setTimeout(tick, 250);
+            };
+            setTimeout(tick, 200);
+        });
+    }
+
+    function executeTool(name, input) {
+        // Returns a Promise<string> — the tool_result content to send back.
+        if (name === 'select_test') {
+            const flash = flashToolCall('Pearl is opening the ' + (input.test_id || '') + ' card...');
+            const r = doSelectTest(input.test_id);
+            collapseFlash(flash, r.ok ? 'Opened ' + input.test_id : 'Could not open card');
+            return Promise.resolve(JSON.stringify(r));
+        }
+        if (name === 'configure_test') {
+            const flash = flashToolCall('Pearl is configuring the ' + (input.test_id || '') + ' card...');
+            const r = doConfigureTest(input.test_id, input.params || {});
+            collapseFlash(flash, r.ok ? 'Configured ' + input.test_id : 'Configure failed');
+            return Promise.resolve(JSON.stringify(r));
+        }
+        if (name === 'run_test') {
+            const flash = flashToolCall('Pearl is running the ' + (input.test_id || '') + '...');
+            return doRunTest(input.test_id).then(function(r){
+                collapseFlash(flash, r.ok ? 'Ran ' + (r.test || input.test_id) : 'Run failed');
+                return JSON.stringify(r);
+            });
+        }
+        return Promise.resolve(JSON.stringify({ ok: false, error: 'Unknown tool: ' + name }));
+    }
+
+    function renderAssistantText(textParts) {
+        let reply = textParts.join('\n').trim();
+        if (!reply) return;
+        reply = escapeHtml(reply);
+        reply = reply.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        reply = reply.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+        reply = reply.replace(/\*(.+?)\*/g, '<i>$1</i>');
+        reply = reply.replace(/^- /gm, '&bull; ');
+        reply = reply.replace(/\n/g, '<br>');
+        botSay(reply);
+    }
+
+    function processAIResponse(data, typing) {
+        if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+        if (data.error) {
+            botSay('&#128008; Hmm, something went wrong: ' + escapeHtml(data.error));
+            chatBusy = false; chatSend.disabled = false;
+            return;
+        }
+        const blocks = data.content || [];
+        const textParts = [];
+        const toolUses = [];
+        blocks.forEach(function(b){
+            if (b.type === 'text') textParts.push(b.text);
+            if (b.type === 'tool_use') toolUses.push(b);
+        });
+        renderAssistantText(textParts);
+        chatHistory.push({ role: 'assistant', content: blocks });
+
+        if (!toolUses.length) {
+            chatBusy = false; chatSend.disabled = false;
+            return;
+        }
+        // Run all tools sequentially (most are sync; run_test is async).
+        const toolResults = [];
+        const runNext = function(i){
+            if (i >= toolUses.length) {
+                chatHistory.push({ role: 'user', content: toolResults });
+                callPearl();
+                return;
+            }
+            const tu = toolUses[i];
+            executeTool(tu.name, tu.input || {}).then(function(resultStr){
+                toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: resultStr });
+                runNext(i + 1);
+            });
+        };
+        runNext(0);
+    }
+
+    function callPearl() {
         const typing = document.createElement('div');
         typing.className = 'chat-msg bot';
         typing.style.opacity = '0.6';
@@ -5856,38 +6048,26 @@ result_json = json.dumps(result)
                 lastResult: lastResultSummary
             })
         })
-        .then(r => r.json())
-        .then(data => {
-            if (typing.parentNode) typing.parentNode.removeChild(typing);
-            if (data.error) {
-                botSay('&#128008; Hmm, something went wrong: ' + escapeHtml(data.error));
-                chatBusy = false;
-                chatSend.disabled = false;
-                return;
-            }
-            const textParts = [];
-            (data.content || []).forEach(block => {
-                if (block.type === 'text') textParts.push(block.text);
-            });
-            let reply = textParts.join('\n').trim() || "I'm not sure how to respond to that &mdash; try rephrasing?";
-            reply = escapeHtml(reply);
-            // Markdown links: [text](url) — must run before bold/italic so brackets stay intact
-            reply = reply.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-            reply = reply.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-            reply = reply.replace(/\*(.+?)\*/g, '<i>$1</i>');
-            reply = reply.replace(/^- /gm, '&bull; ');
-            reply = reply.replace(/\n/g, '<br>');
-            botSay(reply);
-            chatHistory.push({ role: 'assistant', content: data.content });
-            chatBusy = false;
-            chatSend.disabled = false;
-        })
-        .catch(err => {
+        .then(function(r){ return r.json(); })
+        .then(function(data){ processAIResponse(data, typing); })
+        .catch(function(err){
             if (typing.parentNode) typing.parentNode.removeChild(typing);
             botSay("&#128008; Lost connection. Pearl's API may not be deployed yet &mdash; check that <code>pearl-api</code> Worker is live in Cloudflare.");
-            chatBusy = false;
-            chatSend.disabled = false;
+            chatBusy = false; chatSend.disabled = false;
         });
+    }
+
+    function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text || chatBusy) return;
+        const chips = document.getElementById('chatChips');
+        if (chips) chips.remove();
+        chatBusy = true;
+        chatSend.disabled = true;
+        userSay(text);
+        chatHistory.push({ role: 'user', content: text });
+        chatInput.value = '';
+        callPearl();
     }
 
     // Hook into showResults to capture a summary for Pearl

@@ -77,18 +77,52 @@ LITERATURE REVIEW (you have a web_search tool):
 - REPLY FORMAT after searching: still terse. Name 1–3 most relevant papers, ONE line each, with an inline markdown link: "[Author et al., year](url) — one-line finding." Then one short sentence tying it to the user's question. NEVER a numbered list of 5+ "here are some sources." NEVER dump abstracts.
 - BE HONEST about the tool: this is general web search, not Google Scholar. For systematic reviews / exhaustive lit search, point them to Google Scholar, PubMed, Web of Science, or Scopus.
 
-3. RECOMMENDING TESTS (when asked "which test should I use"):
+3. CLIENT TOOLS YOU CAN CALL (drive Pearl's UI directly):
+
+You have 3 tools that operate the test cards on the user's screen. Use them when the user asks you to actually RUN an analysis, not just explain or recommend one.
+
+  • select_test({test_id}) — opens the configuration card for a test. test_id is one of: descriptives, ttest, correlation, anova, chisquare, regression, multireg, logistic, manova, factor, ancova, factorial, pairedt, mannwhitney, wilcoxon, kruskal, cronbach, rmanova, multinom.
+
+  • configure_test({test_id, params}) — fills the dropdowns/pills on the OPEN card. params is a flat object whose keys depend on the test. Common keys:
+      - dv (dependent variable, column name)
+      - iv (independent variable, column name)
+      - x, y (regression / correlation)
+      - var1, var2 (chi-square)
+      - iv1, iv2 (factorial ANOVA)
+      - v1, v2 (paired t / wilcoxon — pre/post)
+      - method (correlation: "pearson" | "spearman")
+      - predictors (array of column names — multireg, logistic, multinom)
+      - dvs (array — manova)
+      - covariates (array — ancova)
+      - variables (array — factor analysis)
+      - items (array — cronbach)
+      - measures (array — rmanova; in time order)
+      - nfactors ("auto" | "1".."5"), rotation ("varimax" | "promax" | "none")
+      - positive (logistic — which level codes as 1)
+      - reference (multinom — reference level)
+
+  • run_test({test_id}) — clicks the Run button on the open card. Returns the test name, key statistics, and the on-screen interpretation. Use this AFTER configure_test.
+
+WHEN to use them:
+- User says "run an ANOVA on posttest by group" → select_test → configure_test → run_test, all in one chain.
+- User asks "which test fits?" → answer in words, do NOT auto-run. Wait for them to say "go ahead" or "run it."
+- User asks to interpret a result that just ran → use the lastResult block above, NO tool needed.
+- If required params aren't clear from data context, ask ONE clarifying question first instead of guessing.
+
+After tools complete, give a ONE-sentence plain-English summary of the result. Don't dump the raw stats — those are already on screen.
+
+4. RECOMMENDING TESTS (when asked "which test should I use"):
 
 Step 1 (variable types): Quant DV + Quant IV → Correlation/Regression. Quant DV + Categ IV → t-test/ANOVA/ANCOVA/MANOVA. Categ DV → Logistic/Chi-square. Multiple-DV structure → Factor Analysis.
 Step 2 (goal): describe relationship / compare groups / predict outcome / find structure.
 
 Pick from the test list above. Tell them which card to click. Don't enumerate options — recommend ONE test that fits.
 
-4. INTERPRETING A RESULT (when user just ran one — see lastResult above):
+5. INTERPRETING A RESULT (when user just ran one — see lastResult above):
 - One sentence: significant or not, direction, effect-size meaning in plain words.
 - Optional: offer ONE follow-up. Don't volunteer more.
 
-5. APA REPORTING (only when explicitly asked):
+6. APA REPORTING (only when explicitly asked):
 - t-test: t(df), p, d
 - ANOVA: F(df1, df2), p, η² (Tukey pairs if sig)
 - correlation: r(df), p (Spearman uses ρ)
@@ -153,7 +187,55 @@ RULES:
           max_tokens: 4096,
           system: systemPrompt,
           tools: [
-            { type: "web_search_20250305", name: "web_search", max_uses: 3 }
+            { type: "web_search_20250305", name: "web_search", max_uses: 3 },
+            {
+              name: "select_test",
+              description: "Open the configuration card for one of Pearl's 20 tests so the user (and you) can configure it. Use this as the FIRST step when running an analysis. The card scrolls into view automatically.",
+              input_schema: {
+                type: "object",
+                properties: {
+                  test_id: {
+                    type: "string",
+                    enum: ["descriptives","ttest","correlation","anova","chisquare","regression","multireg","logistic","manova","factor","ancova","factorial","pairedt","mannwhitney","wilcoxon","kruskal","cronbach","rmanova","multinom"],
+                    description: "Slug for the test card to open."
+                  }
+                },
+                required: ["test_id"]
+              }
+            },
+            {
+              name: "configure_test",
+              description: "Fill the dropdowns and pill checkboxes on the currently-open test card. Pass column names exactly as they appear in the user's data context. See the CLIENT TOOLS section for which keys each test accepts.",
+              input_schema: {
+                type: "object",
+                properties: {
+                  test_id: {
+                    type: "string",
+                    enum: ["descriptives","ttest","correlation","anova","chisquare","regression","multireg","logistic","manova","factor","ancova","factorial","pairedt","mannwhitney","wilcoxon","kruskal","cronbach","rmanova","multinom"]
+                  },
+                  params: {
+                    type: "object",
+                    description: "Flat object of params. Single-value keys (e.g. dv, iv, x, y, method) take strings. Multi-value keys (e.g. predictors, dvs, covariates, variables, items, measures) take arrays of column names.",
+                    additionalProperties: true
+                  }
+                },
+                required: ["test_id", "params"]
+              }
+            },
+            {
+              name: "run_test",
+              description: "Click the Run button on the open card and wait for the result. Returns the test name, key statistics, and the on-screen interpretation. Use AFTER configure_test.",
+              input_schema: {
+                type: "object",
+                properties: {
+                  test_id: {
+                    type: "string",
+                    enum: ["descriptives","ttest","correlation","anova","chisquare","regression","multireg","logistic","manova","factor","ancova","factorial","pairedt","mannwhitney","wilcoxon","kruskal","cronbach","rmanova","multinom"]
+                  }
+                },
+                required: ["test_id"]
+              }
+            }
           ],
           messages: apiMessages
         })
